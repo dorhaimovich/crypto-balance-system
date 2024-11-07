@@ -1,8 +1,9 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { Balance, User } from 'src/shared/interfaces';
 
 @Injectable()
 export class BalancesService {
-  private balances = [
+  private balances: User[] = [
     {
       id: '123',
       name: 'Jonny',
@@ -21,17 +22,17 @@ export class BalancesService {
     },
     {
       id: '12345',
-      asset: 'JonnyKamony',
+      name: 'JonnyKamony',
       balances: [
         {
           currency: 'BTC',
           asset: 'bitcoin',
-          amount: 700,
+          amount: 1700,
         },
         {
           currency: 'THC',
           asset: 'Tonny',
-          amount: 200,
+          amount: 2300,
         },
       ],
     },
@@ -49,26 +50,38 @@ export class BalancesService {
     return filterUser.balances;
   }
 
-  getOneBalance(id: string, currency: string) {
-    if (!id || !currency) {
+  getOneBalance(id: string, asset: string) {
+    if (!id || !asset) {
       throw BadRequestException;
     }
+
     const user = this.balances.find((user) => user.id == id);
     if (!user) {
       throw BadRequestException; // no user found
     }
 
-    const balance = user.balances.find(
-      (balance) => balance.currency == currency,
-    );
+    let balance = this.getOneBalanceByAsset(user, asset);
+    if (!balance) {
+      balance = this.getOneBalanceByCurrency(user, asset);
+    }
+    if (!balance) {
+      throw BadRequestException; // balance not found
+    }
 
     return balance;
   }
+  private getOneBalanceByCurrency(user: User, currency: string) {
+    return user.balances.find(
+      (balance) => balance.currency.toLowerCase() == currency.toLowerCase(),
+    );
+  }
+  private getOneBalanceByAsset(user: User, asset: string) {
+    return user.balances.find(
+      (balance) => balance.asset.toLowerCase() == asset.toLowerCase(),
+    );
+  }
 
-  createAsset(
-    id: string,
-    newBalance: { currency: string; asset: string; amount: Float32Array },
-  ) {
+  createAsset(id: string, newBalance: Balance) {
     const user = this.balances.find((user) => user.id == id);
     if (!user) {
       throw BadRequestException; // no user found
@@ -80,14 +93,15 @@ export class BalancesService {
     if (balance) {
       throw BadRequestException; // currency already exist
     }
+    user.balances.push(newBalance); // add asset to the user in db
 
-    // add currency to the user in db
+    return user;
   }
 
   updateAsset(
     id: string,
     newBalance: {
-      currency: string;
+      currency?: string;
       asset?: string;
       amount: number;
     },
@@ -115,8 +129,8 @@ export class BalancesService {
     // add currency to the user in db
   }
 
-  deleteBalance(id: string, currency: string) {
-    if (!id || !currency) {
+  deleteBalance(id: string, asset: string) {
+    if (!id || !asset) {
       throw BadRequestException;
     }
     const user = this.balances.find((user) => user.id == id);
@@ -124,11 +138,11 @@ export class BalancesService {
       throw BadRequestException; // no user found
     }
 
-    const removedBalance = this.getOneBalance(id, currency);
-    user.balances = user.balances.filter(
-      (balance) => balance.currency !== currency,
-    );
+    const removedBalance = this.getOneBalance(id, asset);
+    user.balances = user.balances.filter((balance) => balance.asset !== asset);
 
     return removedBalance;
   }
 }
+export { Balance };
+

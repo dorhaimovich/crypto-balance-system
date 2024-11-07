@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { Balance, User } from 'src/shared/interfaces';
+import { Balance, User } from 'src/shared/types';
 
 @Injectable()
 export class BalancesService {
@@ -145,4 +145,3 @@ export class BalancesService {
   }
 }
 export { Balance };
-

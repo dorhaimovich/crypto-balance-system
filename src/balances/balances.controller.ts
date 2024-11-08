@@ -7,9 +7,9 @@ import {
   Patch,
   Post,
   Headers,
-  BadRequestException,
 } from '@nestjs/common';
 import { Balance, BalancesService } from './balances.service';
+import { NoUserIdException } from 'src/shared/exceptions/http-exceptions';
 
 @Controller('balances')
 export class BalancesController {
@@ -18,7 +18,7 @@ export class BalancesController {
   @Get()
   getAllBalances(@Headers() headers: object) {
     if (!headers['x-user-id']) {
-      throw BadRequestException; // no id in headers
+      throw new NoUserIdException();
     }
     const balances = this.balancesService.getAllBalances(headers['x-user-id']);
     return balances;
@@ -27,24 +27,15 @@ export class BalancesController {
   @Get(':asset')
   getOneBalance(@Headers() headers: object, @Param('asset') asset: string) {
     if (!headers['x-user-id']) {
-      throw BadRequestException; // no id in headers
+      throw new NoUserIdException();
     }
-    if (!asset) {
-      throw BadRequestException; // no asset sent
-      //is in nesseary? with no asset it will get all...
-    }
-    const balance = this.balancesService.getOneBalance(
-      headers['x-user-id'],
-      asset,
-    );
 
-    return balance;
+    return this.balancesService.getOneBalance(headers['x-user-id'], asset);
   }
 
   @Post()
   createAsset(@Headers() headers: object, @Body() asset: Balance) {
-    const user = this.balancesService.createAsset(headers['x-user-id'], asset);
-    return user;
+    return this.balancesService.createAsset(headers['x-user-id'], asset);
   }
 
   @Patch(':asset')

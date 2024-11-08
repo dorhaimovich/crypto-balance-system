@@ -1,5 +1,12 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  AssetAlreadyExistException,
+  AssetNotFoundException,
+  CurrencyAlreadyExistException,
+  UserNotFoundException,
+} from 'src/shared/exceptions/http-exceptions';
 import { Balance, User } from 'src/shared/types';
+import { CreateBalanceDto, UpdateBalanceDto } from './dto/balance.dto';
 
 @Injectable()
 export class BalancesService {
@@ -37,39 +44,14 @@ export class BalancesService {
       ],
     },
   ];
-
-  getAllBalances(id?: string) {
-    if (!id) {
-      throw BadRequestException;
-    }
-
-    const filterUser = this.balances.find((user) => user.id == id);
-    if (!filterUser) {
-      throw BadRequestException; // user not exist, maybe create one?
-    }
-    return filterUser.balances;
-  }
-
-  getOneBalance(id: string, asset: string) {
-    if (!id || !asset) {
-      throw BadRequestException;
-    }
-
+  private getUser(id: string) {
     const user = this.balances.find((user) => user.id == id);
     if (!user) {
-      throw BadRequestException; // no user found
+      throw new UserNotFoundException(id);
     }
-
-    let balance = this.getOneBalanceByAsset(user, asset);
-    if (!balance) {
-      balance = this.getOneBalanceByCurrency(user, asset);
-    }
-    if (!balance) {
-      throw BadRequestException; // balance not found
-    }
-
-    return balance;
+    return user;
   }
+
   private getOneBalanceByCurrency(user: User, currency: string) {
     return user.balances.find(
       (balance) => balance.currency.toLowerCase() == currency.toLowerCase(),
@@ -81,46 +63,61 @@ export class BalancesService {
     );
   }
 
-  createAsset(id: string, newBalance: Balance) {
-    const user = this.balances.find((user) => user.id == id);
-    if (!user) {
-      throw BadRequestException; // no user found
+  getAllBalances(id: string) {
+    return this.getUser(id).balances;
+  }
+
+  getOneBalance(id: string, asset: string) {
+    const user = this.getUser(id);
+
+    let balance = this.getOneBalanceByAsset(user, asset);
+    if (!balance) {
+      balance = this.getOneBalanceByCurrency(user, asset);
+    }
+    if (!balance) {
+      throw new AssetNotFoundException(asset);
     }
 
-    const balance = user.balances.find(
-      (balance) => balance.currency == newBalance.currency,
+    return balance;
+  }
+
+  createAsset(id: string, createBalanceDto: CreateBalanceDto) {
+    const user = this.getUser(id);
+
+    let balance = user.balances.find(
+      (balance) => balance.asset == createBalanceDto.asset,
     );
     if (balance) {
-      throw BadRequestException; // currency already exist
+      throw new AssetAlreadyExistException(balance.asset);
     }
-    user.balances.push(newBalance); // add asset to the user in db
 
+    balance = user.balances.find(
+      (balance) => balance.currency == createBalanceDto.currency,
+    );
+    if (balance) {
+      throw new CurrencyAlreadyExistException(balance.currency);
+    }
+
+    user.balances.push(createBalanceDto); // add asset to the user in db
     return user;
   }
 
-  updateAsset(
-    id: string,
-    newBalance: {
-      currency?: string;
-      asset?: string;
-      amount: number;
-    },
-  ) {
+  updateAsset(id: string, updateBalanceDto: UpdateBalanceDto) {
     const user = this.balances.find((user) => user.id == id);
     if (!user) {
       throw BadRequestException; // no user found
     }
 
     const balance = user.balances.find(
-      (balance) => balance.currency == newBalance.currency,
+      (balance) => balance.currency == updateBalanceDto.currency,
     );
     if (!balance) {
       throw BadRequestException; // currency not exist
     }
 
     user.balances = user.balances.map((balance) => {
-      if (balance.currency == newBalance.currency) {
-        return { ...balance, ...newBalance };
+      if (balance.currency == updateBalanceDto.currency) {
+        return { ...balance, ...updateBalanceDto };
       }
       return balance;
     });

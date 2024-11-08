@@ -10,7 +10,7 @@ class NoUserIdException extends HttpException {
 
 class UserNotFoundException extends HttpException {
   constructor(id: string) {
-    super(`User id '${id}' not found!`, HttpStatus.BAD_REQUEST, {
+    super(`User id '${id}' not found!`, HttpStatus.NOT_FOUND, {
       description: 'The user id not found in the database',
     });
   }
@@ -18,7 +18,7 @@ class UserNotFoundException extends HttpException {
 
 class AssetNotFoundException extends HttpException {
   constructor(asset: string) {
-    super(`Asset '${asset}' not found!`, HttpStatus.BAD_REQUEST, {
+    super(`Asset '${asset}' not found!`, HttpStatus.NOT_FOUND, {
       description: 'The user does not have this asset',
     });
   }

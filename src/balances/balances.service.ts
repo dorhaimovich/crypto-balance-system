@@ -6,6 +6,7 @@ import {
   UserNotFoundException,
 } from 'src/shared/exceptions/http-exceptions';
 import { Balance, User } from 'src/shared/types';
+import { CreateBalanceDto, UpdateBalanceDto } from './dto/balance.dto';
 
 @Injectable()
 export class BalancesService {
@@ -80,50 +81,43 @@ export class BalancesService {
     return balance;
   }
 
-  createAsset(id: string, newBalance: Balance) {
+  createAsset(id: string, createBalanceDto: CreateBalanceDto) {
     const user = this.getUser(id);
 
     let balance = user.balances.find(
-      (balance) => balance.asset == newBalance.asset,
+      (balance) => balance.asset == createBalanceDto.asset,
     );
     if (balance) {
       throw new AssetAlreadyExistException(balance.asset);
     }
 
     balance = user.balances.find(
-      (balance) => balance.currency == newBalance.currency,
+      (balance) => balance.currency == createBalanceDto.currency,
     );
     if (balance) {
       throw new CurrencyAlreadyExistException(balance.currency);
     }
 
-    user.balances.push(newBalance); // add asset to the user in db
+    user.balances.push(createBalanceDto); // add asset to the user in db
     return user;
   }
 
-  updateAsset(
-    id: string,
-    newBalance: {
-      currency?: string;
-      asset?: string;
-      amount: number;
-    },
-  ) {
+  updateAsset(id: string, updateBalanceDto: UpdateBalanceDto) {
     const user = this.balances.find((user) => user.id == id);
     if (!user) {
       throw BadRequestException; // no user found
     }
 
     const balance = user.balances.find(
-      (balance) => balance.currency == newBalance.currency,
+      (balance) => balance.currency == updateBalanceDto.currency,
     );
     if (!balance) {
       throw BadRequestException; // currency not exist
     }
 
     user.balances = user.balances.map((balance) => {
-      if (balance.currency == newBalance.currency) {
-        return { ...balance, ...newBalance };
+      if (balance.currency == updateBalanceDto.currency) {
+        return { ...balance, ...updateBalanceDto };
       }
       return balance;
     });

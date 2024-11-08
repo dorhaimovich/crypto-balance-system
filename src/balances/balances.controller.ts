@@ -7,9 +7,12 @@ import {
   Patch,
   Post,
   Headers,
+  ValidationPipe,
+  UsePipes,
 } from '@nestjs/common';
 import { Balance, BalancesService } from './balances.service';
 import { NoUserIdException } from 'src/shared/exceptions/http-exceptions';
+import { CreateBalanceDto, UpdateBalanceDto } from './dto/balance.dto';
 
 @Controller('balances')
 export class BalancesController {
@@ -34,17 +37,24 @@ export class BalancesController {
   }
 
   @Post()
-  createAsset(@Headers() headers: object, @Body() asset: Balance) {
-    return this.balancesService.createAsset(headers['x-user-id'], asset);
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  createAsset(
+    @Headers() headers: object,
+    @Body() createBalanceDto: CreateBalanceDto,
+  ) {
+    return this.balancesService.createAsset(
+      headers['x-user-id'],
+      createBalanceDto,
+    );
   }
 
-  @Patch(':asset')
+  @Patch()
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   updateAsset(
     @Headers() headers: object,
-    @Param('asset') asset: string,
-    @Body() body: object,
+    @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
-    return asset; //TODO: create the update methods
+    return updateBalanceDto; //TODO: create the update methods
   }
 
   @Delete(':asset')

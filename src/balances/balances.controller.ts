@@ -10,9 +10,14 @@ import {
   ValidationPipe,
   UsePipes,
 } from '@nestjs/common';
-import { Balance, BalancesService } from './balances.service';
+import { BalancesService } from './balances.service';
 import { NoUserIdException } from 'src/shared/exceptions/http-exceptions';
-import { CreateBalanceDto, UpdateBalanceDto } from './dto/balance.dto';
+import { CreateBalanceDto } from './dto/create-balance.dto';
+import { UpdateBalanceDto } from './dto/update-balance.dto';
+
+type Asset = string;
+type Currency = string;
+export type BalanceIdentifier = Asset | Currency;
 
 @Controller('balances')
 export class BalancesController {
@@ -42,27 +47,32 @@ export class BalancesController {
     @Headers() headers: object,
     @Body() createBalanceDto: CreateBalanceDto,
   ) {
-    return this.balancesService.createAsset(
+    if (!headers['x-user-id']) {
+      throw new NoUserIdException();
+    }
+
+    return this.balancesService.createBalance(
       headers['x-user-id'],
       createBalanceDto,
     );
   }
 
-  @Patch()
+  @Patch(':identifier')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   updateAsset(
     @Headers() headers: object,
+    @Param('identifier') identifier: BalanceIdentifier,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
-    return updateBalanceDto; //TODO: create the update methods
+    return this.balancesService.updateBalance(
+      headers['x-user-id'],
+      identifier,
+      updateBalanceDto,
+    );
   }
 
   @Delete(':asset')
   removeAsset(@Headers() headers: object, @Param('asset') asset: string) {
-    const removedBalance = this.balancesService.deleteBalance(
-      headers['x-user-id'],
-      asset,
-    );
-    return removedBalance;
+    return this.balancesService.deleteBalance(headers['x-user-id'], asset);
   }
 }

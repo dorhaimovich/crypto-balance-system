@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Config, JsonDB } from 'node-json-db';
-import { UpdateIdentifier } from 'src/balances/balances.controller';
+import { BalanceIdentifier } from 'src/balances/balances.controller';
 import { CreateBalanceDto } from 'src/balances/dto/create-balance.dto';
 import { UpdateBalanceDto } from 'src/balances/dto/update-balance.dto';
 import {
   AssetAlreadyExistException,
-  AssetNotFoundException,
   UserAlreadyExistException,
   UserNotFoundException,
+  IdentifierNotFoundException,
+  CurrencyAlreadyExistException,
 } from 'src/shared/exceptions/http-exceptions';
 
 @Injectable()
@@ -48,16 +49,23 @@ export class DatabaseService {
     return this.db.getData(`/users[${userIndex}]/balances`);
   }
 
-  async getOneUserBalancesByAsset(id: string, asset: string) {
+  async getOneUserBalance(id: string, identifier: BalanceIdentifier) {
     const userIndex = await this.db.getIndex('/users', id);
     if (userIndex === -1) throw new UserNotFoundException(id);
 
-    const balanceIndex = await this.db.getIndex(
+    let balanceIndex = await this.db.getIndex(
       `/users[${userIndex}]/balances`,
-      asset,
+      identifier,
       'asset',
     );
-    if (balanceIndex === -1) throw new AssetNotFoundException(id);
+    if (balanceIndex === -1) {
+      balanceIndex = await this.db.getIndex(
+        `/users[${userIndex}]/balances`,
+        identifier,
+        'currency',
+      );
+    }
+    if (balanceIndex === -1) throw new IdentifierNotFoundException(identifier);
 
     return this.db.getData(`/users[${userIndex}]/balances[${balanceIndex}]`);
   }
@@ -67,7 +75,7 @@ export class DatabaseService {
     const userIndex = await this.db.getIndex('/users', id);
     if (userIndex === -1) throw new UserNotFoundException(id);
 
-    const balanceIndex = await this.db.getIndex(
+    let balanceIndex = await this.db.getIndex(
       `/users[${userIndex}]/balances`,
       createBalanceDto.asset,
       'asset',
@@ -75,12 +83,20 @@ export class DatabaseService {
     if (balanceIndex != -1)
       throw new AssetAlreadyExistException(createBalanceDto.asset);
 
+    balanceIndex = await this.db.getIndex(
+      `/users[${userIndex}]/balances`,
+      createBalanceDto.currency,
+      'currency',
+    );
+    if (balanceIndex != -1)
+      throw new CurrencyAlreadyExistException(createBalanceDto.currency);
+
     this.db.push(`/users[${userIndex}]/balances[]`, createBalanceDto);
   }
 
   async updateUserBalance(
     id: string,
-    identifier: UpdateIdentifier,
+    identifier: BalanceIdentifier,
     updateBalanceDto: UpdateBalanceDto,
   ) {
     const userIndex = await this.db.getIndex('/users', id);
@@ -98,7 +114,7 @@ export class DatabaseService {
         'currency',
       );
     }
-    if (balanceIndex === -1) throw new AssetNotFoundException(identifier);
+    if (balanceIndex === -1) throw new IdentifierNotFoundException(identifier);
 
     this.db.push(
       `/users[${userIndex}]/balances[${balanceIndex}]`,
@@ -106,7 +122,7 @@ export class DatabaseService {
     );
   }
 
-  async deleteUserBalance(id: string, identifier: UpdateIdentifier) {
+  async deleteUserBalance(id: string, identifier: BalanceIdentifier) {
     const userIndex = await this.db.getIndex('/users', id);
     if (userIndex === -1) throw new UserNotFoundException(id);
 
@@ -122,7 +138,7 @@ export class DatabaseService {
         'currency',
       );
     }
-    if (balanceIndex === -1) throw new AssetNotFoundException(identifier);
+    if (balanceIndex === -1) throw new IdentifierNotFoundException(identifier);
 
     await this.db.delete(`/users[${userIndex}]/balances[${balanceIndex}]`);
   }

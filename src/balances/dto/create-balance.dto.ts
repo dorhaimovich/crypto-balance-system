@@ -1,4 +1,3 @@
-import { PartialType } from '@nestjs/mapped-types';
 import { IsNotEmpty, IsString, Min } from 'class-validator';
 
 export class CreateBalanceDto {
@@ -14,5 +13,3 @@ export class CreateBalanceDto {
   @IsNotEmpty()
   amount: number;
 }
-
-export class UpdateBalanceDto extends PartialType(CreateBalanceDto) {}

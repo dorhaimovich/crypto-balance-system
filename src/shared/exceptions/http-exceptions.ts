@@ -16,13 +16,22 @@ class UserNotFoundException extends HttpException {
   }
 }
 
-class AssetNotFoundException extends HttpException {
-  constructor(asset: string) {
-    super(`Asset '${asset}' not found!`, HttpStatus.NOT_FOUND, {
-      description: 'The user does not have this asset',
+class UserAlreadyExistException extends HttpException {
+  constructor(userId: string) {
+    super(`User ID '${userId}' already exist!`, HttpStatus.BAD_REQUEST, {
+      description: 'The user already exist',
     });
   }
 }
+
+class IdentifierNotFoundException extends HttpException {
+  constructor(asset: string) {
+    super(`Asset or currency '${asset}' not found!`, HttpStatus.NOT_FOUND, {
+      description: 'The user does not have this asset or currency',
+    });
+  }
+}
+
 class AssetAlreadyExistException extends HttpException {
   constructor(asset: string) {
     super(`Asset '${asset}' already exist!`, HttpStatus.BAD_REQUEST, {
@@ -41,7 +50,8 @@ class CurrencyAlreadyExistException extends HttpException {
 export {
   NoUserIdException,
   UserNotFoundException,
-  AssetNotFoundException,
+  UserAlreadyExistException,
+  IdentifierNotFoundException,
   AssetAlreadyExistException,
   CurrencyAlreadyExistException,
 };

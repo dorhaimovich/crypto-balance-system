@@ -1,8 +1,16 @@
-import { IsNotEmpty, IsString, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsUppercase,
+  Length,
+  Min,
+} from 'class-validator';
 
 export class CreateBalanceDto {
   @IsString()
   @IsNotEmpty()
+  @Length(3, 4)
+  @IsUppercase()
   currency: string;
 
   @IsString()

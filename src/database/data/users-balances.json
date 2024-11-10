@@ -7,7 +7,7 @@
                 {
                     "asset": "decoy2",
                     "currency": "dcy2",
-                    "amount": 502
+                    "amount": 13
                 },
                 {
                     "asset": "decoy3",
@@ -43,6 +43,16 @@
                 {
                     "asset": "biWytcoien",
                     "currency": "sdese",
+                    "amount": 100
+                },
+                {
+                    "asset": "EEE",
+                    "currency": "SDES",
+                    "amount": 100
+                },
+                {
+                    "asset": "EEEE",
+                    "currency": "SDS",
                     "amount": 100
                 }
             ]

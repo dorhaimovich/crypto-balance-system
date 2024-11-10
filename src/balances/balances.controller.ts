@@ -9,10 +9,12 @@ import {
   Headers,
   ValidationPipe,
   UsePipes,
+  Put,
 } from '@nestjs/common';
 import { BalancesService } from './balances.service';
 import { NoUserIdException } from 'src/shared/exceptions/http-exceptions';
 import { CreateBalanceDto } from './dto/create-balance.dto';
+import { ChangeBalanceDto } from './dto/change-balance.dto';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
 
 type Asset = string;
@@ -43,7 +45,7 @@ export class BalancesController {
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  createAsset(
+  createBalance(
     @Headers() headers: object,
     @Body() createBalanceDto: CreateBalanceDto,
   ) {
@@ -57,14 +59,56 @@ export class BalancesController {
     );
   }
 
-  @Patch(':identifier')
+  @Put(':identifier')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  updateAsset(
+  changeBalance(
+    @Headers() headers: object,
+    @Param('identifier') identifier: BalanceIdentifier,
+    @Body() updateBalanceDto: ChangeBalanceDto,
+  ) {
+    return this.balancesService.changeBalance(
+      headers['x-user-id'],
+      identifier,
+      updateBalanceDto,
+    );
+  }
+
+  @Patch(':identifier/add')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  addBalanceToAsset(
     @Headers() headers: object,
     @Param('identifier') identifier: BalanceIdentifier,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
-    return this.balancesService.updateBalance(
+    return this.balancesService.addBalance(
+      headers['x-user-id'],
+      identifier,
+      updateBalanceDto,
+    );
+  }
+
+  @Patch(':identifier/substract')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  substractBalanceFromAsset(
+    @Headers() headers: object,
+    @Param('identifier') identifier: BalanceIdentifier,
+    @Body() updateBalanceDto: UpdateBalanceDto,
+  ) {
+    return this.balancesService.substractBalance(
+      headers['x-user-id'],
+      identifier,
+      updateBalanceDto,
+    );
+  }
+
+  @Patch(':identifier/set')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  setBalanceFromAsset(
+    @Headers() headers: object,
+    @Param('identifier') identifier: BalanceIdentifier,
+    @Body() updateBalanceDto: UpdateBalanceDto,
+  ) {
+    return this.balancesService.setBalance(
       headers['x-user-id'],
       identifier,
       updateBalanceDto,
@@ -72,7 +116,7 @@ export class BalancesController {
   }
 
   @Delete(':asset')
-  removeAsset(@Headers() headers: object, @Param('asset') asset: string) {
+  deleteBalance(@Headers() headers: object, @Param('asset') asset: string) {
     return this.balancesService.deleteBalance(headers['x-user-id'], asset);
   }
 }

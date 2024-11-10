@@ -1,46 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { User } from 'src/shared/types';
 import { CreateBalanceDto } from './dto/create-balance.dto';
-import { UpdateBalanceDto } from './dto/update-balance.dto';
+import { ChangeBalanceDto } from './dto/change-balance.dto';
 import { DatabaseService } from './../database/database.service';
 import { BalanceIdentifier } from './balances.controller';
+import { UpdateBalanceDto } from './dto/update-balance.dto';
 @Injectable()
 export class BalancesService {
-  private balances: User[] = [
-    {
-      id: '123',
-      name: 'Jonny',
-      balances: [
-        {
-          currency: 'BTC',
-          asset: 'bitcoin',
-          amount: 700,
-        },
-        {
-          currency: 'THC',
-          asset: 'Tonny',
-          amount: 200,
-        },
-      ],
-    },
-    {
-      id: '12345',
-      name: 'JonnyKamony',
-      balances: [
-        {
-          currency: 'BTC',
-          asset: 'bitcoin',
-          amount: 1700,
-        },
-        {
-          currency: 'THC',
-          asset: 'Tonny',
-          amount: 2300,
-        },
-      ],
-    },
-  ];
-
   constructor(private readonly DatabaseService: DatabaseService) {}
 
   async getAllBalances(id: string) {
@@ -55,12 +20,48 @@ export class BalancesService {
     return this.DatabaseService.createUserBalance(id, createBalanceDto);
   }
 
-  async updateBalance(
+  async changeBalance(
+    id: string,
+    identifier: BalanceIdentifier,
+    changeBalanceDto: ChangeBalanceDto,
+  ) {
+    return this.DatabaseService.changeUserBalance(
+      id,
+      identifier,
+      changeBalanceDto,
+    );
+  }
+
+  async addBalance(
     id: string,
     identifier: BalanceIdentifier,
     updateBalanceDto: UpdateBalanceDto,
   ) {
-    return this.DatabaseService.updateUserBalance(
+    return this.DatabaseService.addUserBalance(
+      id,
+      identifier,
+      updateBalanceDto,
+    );
+  }
+
+  async substractBalance(
+    id: string,
+    identifier: BalanceIdentifier,
+    updateBalanceDto: UpdateBalanceDto,
+  ) {
+    return this.DatabaseService.substractUserBalance(
+      id,
+      identifier,
+      updateBalanceDto,
+    );
+  }
+
+  async setBalance(
+    id: string,
+    identifier: BalanceIdentifier,
+    updateBalanceDto: UpdateBalanceDto,
+  ) {
+    return this.DatabaseService.setUserBalance(
       id,
       identifier,
       updateBalanceDto,

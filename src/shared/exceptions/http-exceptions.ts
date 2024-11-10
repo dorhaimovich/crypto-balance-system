@@ -25,10 +25,14 @@ class UserAlreadyExistException extends HttpException {
 }
 
 class IdentifierNotFoundException extends HttpException {
-  constructor(asset: string) {
-    super(`Asset or currency '${asset}' not found!`, HttpStatus.NOT_FOUND, {
-      description: 'The user does not have this asset or currency',
-    });
+  constructor(identifier: string) {
+    super(
+      `Asset or currency '${identifier}' not found!`,
+      HttpStatus.NOT_FOUND,
+      {
+        description: 'The user does not have this asset or currency',
+      },
+    );
   }
 }
 
@@ -46,6 +50,17 @@ class CurrencyAlreadyExistException extends HttpException {
     });
   }
 }
+class InsufficientBalanceException extends HttpException {
+  constructor(amount: number, identifier: string) {
+    super(
+      `there is only '${amount}' from '${identifier}' asset or currency`,
+      HttpStatus.BAD_REQUEST,
+      {
+        description: 'The user does not have enough from that currency',
+      },
+    );
+  }
+}
 
 export {
   NoUserIdException,
@@ -54,4 +69,5 @@ export {
   IdentifierNotFoundException,
   AssetAlreadyExistException,
   CurrencyAlreadyExistException,
+  InsufficientBalanceException,
 };

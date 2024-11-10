@@ -1,0 +1,61 @@
+{
+    "users": [
+        {
+            "id": "12345",
+            "name": "jonny",
+            "balances": [
+                {
+                    "asset": "decoy2",
+                    "currency": "dcy2",
+                    "amount": 13
+                },
+                {
+                    "asset": "decoy3",
+                    "currency": "dcy3",
+                    "amount": 503
+                }
+            ]
+        },
+        {
+            "id": "123456",
+            "name": "jonny",
+            "balances": []
+        },
+        {
+            "id": "1234564",
+            "name": "jonny",
+            "balances": []
+        },
+        {
+            "id": "12345642",
+            "name": "jonny",
+            "balances": [
+                {
+                    "asset": "biWtcoin",
+                    "currency": "sds",
+                    "amount": 100
+                },
+                {
+                    "asset": "biWytcoin",
+                    "currency": "sdse",
+                    "amount": 100
+                },
+                {
+                    "asset": "biWytcoien",
+                    "currency": "sdese",
+                    "amount": 100
+                },
+                {
+                    "asset": "EEE",
+                    "currency": "SDES",
+                    "amount": 100
+                },
+                {
+                    "asset": "EEEE",
+                    "currency": "SDS",
+                    "amount": 100
+                }
+            ]
+        }
+    ]
+}

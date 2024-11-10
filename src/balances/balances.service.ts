@@ -1,144 +1,74 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import {
-  AssetAlreadyExistException,
-  AssetNotFoundException,
-  CurrencyAlreadyExistException,
-  UserNotFoundException,
-} from 'src/shared/exceptions/http-exceptions';
-import { Balance, User } from 'src/shared/types';
-import { CreateBalanceDto, UpdateBalanceDto } from './dto/balance.dto';
-
+import { Injectable } from '@nestjs/common';
+import { CreateBalanceDto } from './dto/create-balance.dto';
+import { ChangeBalanceDto } from './dto/change-balance.dto';
+import { DatabaseService } from './../database/database.service';
+import { BalanceIdentifier } from './balances.controller';
+import { UpdateBalanceDto } from './dto/update-balance.dto';
 @Injectable()
 export class BalancesService {
-  private balances: User[] = [
-    {
-      id: '123',
-      name: 'Jonny',
-      balances: [
-        {
-          currency: 'BTC',
-          asset: 'bitcoin',
-          amount: 700,
-        },
-        {
-          currency: 'THC',
-          asset: 'Tonny',
-          amount: 200,
-        },
-      ],
-    },
-    {
-      id: '12345',
-      name: 'JonnyKamony',
-      balances: [
-        {
-          currency: 'BTC',
-          asset: 'bitcoin',
-          amount: 1700,
-        },
-        {
-          currency: 'THC',
-          asset: 'Tonny',
-          amount: 2300,
-        },
-      ],
-    },
-  ];
-  private getUser(id: string) {
-    const user = this.balances.find((user) => user.id == id);
-    if (!user) {
-      throw new UserNotFoundException(id);
-    }
-    return user;
+  constructor(private readonly DatabaseService: DatabaseService) {}
+
+  async getAllBalances(id: string) {
+    return this.DatabaseService.getAllUserBalances(id);
   }
 
-  private getOneBalanceByCurrency(user: User, currency: string) {
-    return user.balances.find(
-      (balance) => balance.currency.toLowerCase() == currency.toLowerCase(),
-    );
+  async getOneBalance(id: string, asset: string) {
+    return this.DatabaseService.getOneUserBalance(id, asset);
   }
-  private getOneBalanceByAsset(user: User, asset: string) {
-    return user.balances.find(
-      (balance) => balance.asset.toLowerCase() == asset.toLowerCase(),
+
+  async createBalance(id: string, createBalanceDto: CreateBalanceDto) {
+    return this.DatabaseService.createUserBalance(id, createBalanceDto);
+  }
+
+  async changeBalance(
+    id: string,
+    identifier: BalanceIdentifier,
+    changeBalanceDto: ChangeBalanceDto,
+  ) {
+    return this.DatabaseService.changeUserBalance(
+      id,
+      identifier,
+      changeBalanceDto,
     );
   }
 
-  getAllBalances(id: string) {
-    return this.getUser(id).balances;
-  }
-
-  getOneBalance(id: string, asset: string) {
-    const user = this.getUser(id);
-
-    let balance = this.getOneBalanceByAsset(user, asset);
-    if (!balance) {
-      balance = this.getOneBalanceByCurrency(user, asset);
-    }
-    if (!balance) {
-      throw new AssetNotFoundException(asset);
-    }
-
-    return balance;
-  }
-
-  createAsset(id: string, createBalanceDto: CreateBalanceDto) {
-    const user = this.getUser(id);
-
-    let balance = user.balances.find(
-      (balance) => balance.asset == createBalanceDto.asset,
+  async addBalance(
+    id: string,
+    identifier: BalanceIdentifier,
+    updateBalanceDto: UpdateBalanceDto,
+  ) {
+    return this.DatabaseService.addUserBalance(
+      id,
+      identifier,
+      updateBalanceDto,
     );
-    if (balance) {
-      throw new AssetAlreadyExistException(balance.asset);
-    }
-
-    balance = user.balances.find(
-      (balance) => balance.currency == createBalanceDto.currency,
-    );
-    if (balance) {
-      throw new CurrencyAlreadyExistException(balance.currency);
-    }
-
-    user.balances.push(createBalanceDto); // add asset to the user in db
-    return user;
   }
 
-  updateAsset(id: string, updateBalanceDto: UpdateBalanceDto) {
-    const user = this.balances.find((user) => user.id == id);
-    if (!user) {
-      throw BadRequestException; // no user found
-    }
-
-    const balance = user.balances.find(
-      (balance) => balance.currency == updateBalanceDto.currency,
+  async substractBalance(
+    id: string,
+    identifier: BalanceIdentifier,
+    updateBalanceDto: UpdateBalanceDto,
+  ) {
+    return this.DatabaseService.substractUserBalance(
+      id,
+      identifier,
+      updateBalanceDto,
     );
-    if (!balance) {
-      throw BadRequestException; // currency not exist
-    }
-
-    user.balances = user.balances.map((balance) => {
-      if (balance.currency == updateBalanceDto.currency) {
-        return { ...balance, ...updateBalanceDto };
-      }
-      return balance;
-    });
-
-    return user;
-    // add currency to the user in db
   }
 
-  deleteBalance(id: string, asset: string) {
-    if (!id || !asset) {
-      throw BadRequestException;
-    }
-    const user = this.balances.find((user) => user.id == id);
-    if (!user) {
-      throw BadRequestException; // no user found
-    }
+  async setBalance(
+    id: string,
+    identifier: BalanceIdentifier,
+    updateBalanceDto: UpdateBalanceDto,
+  ) {
+    return this.DatabaseService.setUserBalance(
+      id,
+      identifier,
+      updateBalanceDto,
+    );
+  }
 
-    const removedBalance = this.getOneBalance(id, asset);
-    user.balances = user.balances.filter((balance) => balance.asset !== asset);
-
-    return removedBalance;
+  async deleteBalance(id: string, identifier: BalanceIdentifier) {
+    return this.DatabaseService.deleteUserBalance(id, identifier);
   }
 }
-export { Balance };

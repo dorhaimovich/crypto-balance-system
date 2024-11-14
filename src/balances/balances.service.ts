@@ -10,7 +10,7 @@ import {
 } from 'src/shared/exceptions/http-exceptions';
 @Injectable()
 export class BalancesService {
-  users_balances_db = 'src/database/data/users-balances';
+  users_balances_db = 'users-balances';
   constructor(private readonly DatabaseService: DatabaseService) {
     this.initDB();
   }

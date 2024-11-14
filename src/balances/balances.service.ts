@@ -4,30 +4,101 @@ import { ChangeBalanceDto } from './dto/change-balance.dto';
 import { DatabaseService } from './../database/database.service';
 import { BalanceIdentifier } from './balances.controller';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
+import {
+  AssetAlreadyExistException,
+  IdentifierNotFoundException,
+  UserNotFoundException,
+} from 'src/shared/exceptions/http-exceptions';
 @Injectable()
 export class BalancesService {
-  constructor(private readonly DatabaseService: DatabaseService) {}
+  users_balances_db = 'src/database/data/users-balances';
+  constructor(private readonly DatabaseService: DatabaseService) {
+    this.initDB();
+  }
+
+  private async initDB() {
+    const users = await this.DatabaseService.getData(
+      this.users_balances_db,
+      '/users',
+    );
+    if (users == null) {
+      await this.DatabaseService.setData(this.users_balances_db, '/users', []);
+    }
+  }
+
+  private async getUserIndex(id: string, exception = UserNotFoundException) {
+    const userIndex = await this.DatabaseService.getArrayIndex(
+      this.users_balances_db,
+      '/users',
+      id,
+    );
+    if (userIndex == null) {
+      throw new exception(id);
+    }
+    return userIndex;
+  }
+
+  private async getBalanceIndex(userIndex: number, asset: string) {
+    const balanceIndex = await this.DatabaseService.getArrayIndex(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances`,
+      asset,
+      'asset',
+    );
+    if (balanceIndex == null) {
+      throw new IdentifierNotFoundException(asset); // change to coin type not found
+    }
+  }
 
   async getAllBalances(id: string) {
-    return this.DatabaseService.getAllUserBalances(id);
+    const userIndex = await this.getUserIndex(id);
+
+    return await this.DatabaseService.getData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances`,
+    );
   }
 
   async getOneBalance(id: string, asset: string) {
-    return this.DatabaseService.getOneUserBalance(id, asset);
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.getBalanceIndex(userIndex, asset);
+
+    return await this.DatabaseService.getData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[${balanceIndex}]`,
+    );
   }
 
   async createBalance(id: string, createBalanceDto: CreateBalanceDto) {
-    return this.DatabaseService.createUserBalance(id, createBalanceDto);
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.DatabaseService.getArrayIndex(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances`,
+      createBalanceDto.asset,
+      'asset',
+    );
+    if (balanceIndex !== null) {
+      throw new AssetAlreadyExistException(createBalanceDto.asset); // change to coin type not found
+    }
+
+    return await this.DatabaseService.setData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[]`,
+      createBalanceDto,
+    );
   }
 
   async changeBalance(
     id: string,
-    identifier: BalanceIdentifier,
+    asset: BalanceIdentifier,
     changeBalanceDto: ChangeBalanceDto,
   ) {
-    return this.DatabaseService.changeUserBalance(
-      id,
-      identifier,
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.getBalanceIndex(userIndex, asset);
+
+    return await this.DatabaseService.setData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[${balanceIndex}]`,
       changeBalanceDto,
     );
   }

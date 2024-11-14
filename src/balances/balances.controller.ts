@@ -17,6 +17,7 @@ import { CreateBalanceDto } from './dto/create-balance.dto';
 import { ChangeBalanceDto } from './dto/change-balance.dto';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
 
+// fix this
 type Asset = string;
 type Currency = string;
 export type BalanceIdentifier = Asset | Currency;
@@ -46,7 +47,7 @@ export class BalancesController {
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
   createBalance(
-    @Headers() headers: object,
+    @Headers() headers: object, // change type
     @Body() createBalanceDto: CreateBalanceDto,
   ) {
     if (!headers['x-user-id']) {

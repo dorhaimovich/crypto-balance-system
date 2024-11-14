@@ -2,106 +2,66 @@ import { Injectable } from '@nestjs/common';
 import { Config, JsonDB } from 'node-json-db';
 import { BalanceIdentifier } from 'src/balances/balances.controller';
 import { ChangeBalanceDto } from 'src/balances/dto/change-balance.dto';
-import { CreateBalanceDto } from 'src/balances/dto/create-balance.dto';
 import { UpdateBalanceDto } from 'src/balances/dto/update-balance.dto';
 import {
-  AssetAlreadyExistException,
-  UserAlreadyExistException,
   UserNotFoundException,
   IdentifierNotFoundException,
-  CurrencyAlreadyExistException,
   InsufficientBalanceException,
 } from 'src/shared/exceptions/http-exceptions';
 
 @Injectable()
 export class DatabaseService {
-  private db: JsonDB;
+  private dbInstances: Map<string, JsonDB> = new Map();
 
-  constructor() {
-    this.db = new JsonDB(
-      new Config('src/database/data/users-balances', true, true, '/'),
-    );
-    this.createUsersArrayIfNotExist();
+  private getDbInstance(filename: string): JsonDB {
+    if (!this.dbInstances.has(filename)) {
+      const db = new JsonDB(new Config(filename, true, false, '/'));
+      this.dbInstances.set(filename, db);
+    }
+    return this.dbInstances.get(filename);
   }
 
-  private async createUsersArrayIfNotExist() {
+  async getData(filename: string, path: string) {
     try {
-      await this.db.getData('/users');
-    } catch {
-      this.db.push('/users', []);
+      const db = this.getDbInstance(filename);
+      const data = await db.getData(path);
+      return data;
+    } catch (error) {
+      console.log(error);
+      return null;
     }
   }
 
-  private async getUserIndex(id: string, exception = UserNotFoundException) {
-    const userIndex = await this.db.getIndex('/users', id);
-    if (userIndex === -1) throw new exception(id);
-
-    return userIndex;
-  }
-
-  private async getBalanceIndex(userIndex: number, identifier: string) {
-    let balanceIndex = await this.db.getIndex(
-      `/users[${userIndex}]/balances`,
-      identifier,
-      'asset',
-    );
-    if (balanceIndex === -1) {
-      balanceIndex = await this.db.getIndex(
-        `/users[${userIndex}]/balances`,
-        identifier,
-        'currency',
-      );
+  async getArrayIndex(
+    filename: string,
+    path: string,
+    value: any,
+    key: string = 'id',
+  ): Promise<number | null> {
+    try {
+      const db = this.getDbInstance(filename);
+      const index = await db.getIndex(path, value, key);
+      if (index == -1) return null;
+      return index;
+    } catch (error) {
+      console.log(error);
+      return null;
     }
-    if (balanceIndex === -1) throw new IdentifierNotFoundException(identifier);
-
-    return balanceIndex;
-  }
-  // not used uet, waiting for questions answering
-  async createUser(user: {
-    id: string;
-    name: string;
-    balances: CreateBalanceDto[];
-  }) {
-    const userIndex = await this.db.getIndex('/users', user.id);
-    if (userIndex !== -1) throw new UserAlreadyExistException(user.id);
-
-    this.db.push('/users[]', user);
   }
 
-  async getAllUserBalances(id: string) {
-    const userIndex = await this.getUserIndex(id);
-
-    return this.db.getData(`/users[${userIndex}]/balances`);
-  }
-
-  async getOneUserBalance(id: string, identifier: BalanceIdentifier) {
-    const userIndex = await this.getUserIndex(id);
-    const balanceIndex = await this.getBalanceIndex(userIndex, identifier);
-
-    return this.db.getData(`/users[${userIndex}]/balances[${balanceIndex}]`);
-  }
-
-  // TODO: test it
-  async createUserBalance(id: string, createBalanceDto: CreateBalanceDto) {
-    const userIndex = await this.getUserIndex(id);
-
-    let balanceIndex = await this.db.getIndex(
-      `/users[${userIndex}]/balances`,
-      createBalanceDto.asset,
-      'asset',
-    );
-    if (balanceIndex != -1)
-      throw new AssetAlreadyExistException(createBalanceDto.asset);
-
-    balanceIndex = await this.db.getIndex(
-      `/users[${userIndex}]/balances`,
-      createBalanceDto.currency,
-      'currency',
-    );
-    if (balanceIndex != -1)
-      throw new CurrencyAlreadyExistException(createBalanceDto.currency);
-
-    this.db.push(`/users[${userIndex}]/balances[]`, createBalanceDto);
+  async setData(
+    filename: string,
+    path: string,
+    data: any,
+  ): Promise<void | null> {
+    try {
+      const db = this.getDbInstance(filename);
+      db.push(path, data);
+      return data;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
   }
 
   async changeUserBalance(

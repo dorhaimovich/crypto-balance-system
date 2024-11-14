@@ -1,74 +1,169 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBalanceDto } from './dto/create-balance.dto';
-import { ChangeBalanceDto } from './dto/change-balance.dto';
 import { DatabaseService } from './../database/database.service';
-import { BalanceIdentifier } from './balances.controller';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
+import {
+  AssetAlreadyExistException,
+  IdentifierNotFoundException,
+  InsufficientBalanceException,
+  UserNotFoundException,
+} from 'src/shared/exceptions/http-exceptions';
 @Injectable()
 export class BalancesService {
-  constructor(private readonly DatabaseService: DatabaseService) {}
+  users_balances_db = 'src/database/data/users-balances';
+  constructor(private readonly DatabaseService: DatabaseService) {
+    this.initDB();
+  }
+
+  private async initDB() {
+    const users = await this.DatabaseService.getData(
+      this.users_balances_db,
+      '/users',
+    );
+    if (users == null) {
+      await this.DatabaseService.setData(this.users_balances_db, '/users', []);
+    }
+  }
+
+  private async getUserIndex(id: string, exception = UserNotFoundException) {
+    const userIndex = await this.DatabaseService.getArrayIndex(
+      this.users_balances_db,
+      '/users',
+      id,
+    );
+    if (userIndex == null) {
+      throw new exception(id);
+    }
+    return userIndex;
+  }
+
+  private async getBalanceIndex(userIndex: number, asset: string) {
+    const balanceIndex = await this.DatabaseService.getArrayIndex(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances`,
+      asset,
+      'asset',
+    );
+    if (balanceIndex == null) {
+      throw new IdentifierNotFoundException(asset); // change to coin type not found
+    }
+    return balanceIndex;
+  }
 
   async getAllBalances(id: string) {
-    return this.DatabaseService.getAllUserBalances(id);
+    const userIndex = await this.getUserIndex(id);
+
+    return await this.DatabaseService.getData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances`,
+    );
   }
 
   async getOneBalance(id: string, asset: string) {
-    return this.DatabaseService.getOneUserBalance(id, asset);
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.getBalanceIndex(userIndex, asset);
+
+    return await this.DatabaseService.getData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[${balanceIndex}]`,
+    );
   }
 
   async createBalance(id: string, createBalanceDto: CreateBalanceDto) {
-    return this.DatabaseService.createUserBalance(id, createBalanceDto);
-  }
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.DatabaseService.getArrayIndex(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances`,
+      createBalanceDto.asset,
+      'asset',
+    );
+    if (balanceIndex !== null) {
+      throw new AssetAlreadyExistException(createBalanceDto.asset); // change to coin type not found
+    }
 
-  async changeBalance(
-    id: string,
-    identifier: BalanceIdentifier,
-    changeBalanceDto: ChangeBalanceDto,
-  ) {
-    return this.DatabaseService.changeUserBalance(
-      id,
-      identifier,
-      changeBalanceDto,
+    return await this.DatabaseService.setData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[]`,
+      createBalanceDto,
     );
   }
 
   async addBalance(
     id: string,
-    identifier: BalanceIdentifier,
+    asset: string,
     updateBalanceDto: UpdateBalanceDto,
   ) {
-    return this.DatabaseService.addUserBalance(
-      id,
-      identifier,
-      updateBalanceDto,
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.getBalanceIndex(userIndex, asset);
+
+    const amount = await this.DatabaseService.getData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
+    );
+    if (amount === null) {
+      throw new NotFoundException(); // changed to specific exception
+    }
+    if (typeof amount !== 'number') {
+      throw new Error(); // changed it
+    }
+
+    return await this.DatabaseService.setData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
+      amount + updateBalanceDto.amount,
     );
   }
 
   async substractBalance(
     id: string,
-    identifier: BalanceIdentifier,
+    asset: string,
     updateBalanceDto: UpdateBalanceDto,
   ) {
-    return this.DatabaseService.substractUserBalance(
-      id,
-      identifier,
-      updateBalanceDto,
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.getBalanceIndex(userIndex, asset);
+
+    const amount = await this.DatabaseService.getData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
+    );
+    if (amount === null) {
+      throw new NotFoundException(); // changed to specific exception
+    }
+    if (typeof amount !== 'number') {
+      throw new Error(); // changed it
+    }
+    if (amount < updateBalanceDto.amount) {
+      throw new InsufficientBalanceException(amount, asset);
+    }
+    return await this.DatabaseService.setData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
+      amount - updateBalanceDto.amount,
     );
   }
 
   async setBalance(
     id: string,
-    identifier: BalanceIdentifier,
+    asset: string,
     updateBalanceDto: UpdateBalanceDto,
   ) {
-    return this.DatabaseService.setUserBalance(
-      id,
-      identifier,
-      updateBalanceDto,
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.getBalanceIndex(userIndex, asset);
+
+    return await this.DatabaseService.setData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
+      updateBalanceDto.amount,
     );
   }
 
-  async deleteBalance(id: string, identifier: BalanceIdentifier) {
-    return this.DatabaseService.deleteUserBalance(id, identifier);
+  async deleteBalance(id: string, asset: string) {
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.getBalanceIndex(userIndex, asset);
+
+    return await this.DatabaseService.removeData(
+      this.users_balances_db,
+      `/users[${userIndex}]/balances[${balanceIndex}]`,
+    );
   }
 }

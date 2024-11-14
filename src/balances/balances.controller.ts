@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
@@ -9,14 +8,14 @@ import {
   Headers,
   ValidationPipe,
   UsePipes,
-  Put,
+  Delete,
 } from '@nestjs/common';
 import { BalancesService } from './balances.service';
 import { NoUserIdException } from 'src/shared/exceptions/http-exceptions';
 import { CreateBalanceDto } from './dto/create-balance.dto';
-import { ChangeBalanceDto } from './dto/change-balance.dto';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
 
+// fix this
 type Asset = string;
 type Currency = string;
 export type BalanceIdentifier = Asset | Currency;
@@ -46,7 +45,7 @@ export class BalancesController {
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
   createBalance(
-    @Headers() headers: object,
+    @Headers() headers: object, // change type
     @Body() createBalanceDto: CreateBalanceDto,
   ) {
     if (!headers['x-user-id']) {
@@ -56,20 +55,6 @@ export class BalancesController {
     return this.balancesService.createBalance(
       headers['x-user-id'],
       createBalanceDto,
-    );
-  }
-
-  @Put(':identifier')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  changeBalance(
-    @Headers() headers: object,
-    @Param('identifier') identifier: BalanceIdentifier,
-    @Body() updateBalanceDto: ChangeBalanceDto,
-  ) {
-    return this.balancesService.changeBalance(
-      headers['x-user-id'],
-      identifier,
-      updateBalanceDto,
     );
   }
 

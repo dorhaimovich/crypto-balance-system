@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
@@ -9,12 +8,11 @@ import {
   Headers,
   ValidationPipe,
   UsePipes,
-  Put,
+  Delete,
 } from '@nestjs/common';
 import { BalancesService } from './balances.service';
 import { NoUserIdException } from 'src/shared/exceptions/http-exceptions';
 import { CreateBalanceDto } from './dto/create-balance.dto';
-import { ChangeBalanceDto } from './dto/change-balance.dto';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
 
 // fix this

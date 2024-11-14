@@ -53,10 +53,10 @@ class CurrencyAlreadyExistException extends HttpException {
 class InsufficientBalanceException extends HttpException {
   constructor(amount: number, identifier: string) {
     super(
-      `there is only '${amount}' from '${identifier}' asset or currency`,
+      'The user does not have enough balance from that currency',
       HttpStatus.BAD_REQUEST,
       {
-        description: 'The user does not have enough from that currency',
+        description: `there is only '${amount} ${identifier}'`,
       },
     );
   }

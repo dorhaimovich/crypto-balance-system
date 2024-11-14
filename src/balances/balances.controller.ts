@@ -60,20 +60,6 @@ export class BalancesController {
     );
   }
 
-  @Put(':identifier')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  changeBalance(
-    @Headers() headers: object,
-    @Param('identifier') identifier: BalanceIdentifier,
-    @Body() updateBalanceDto: ChangeBalanceDto,
-  ) {
-    return this.balancesService.changeBalance(
-      headers['x-user-id'],
-      identifier,
-      updateBalanceDto,
-    );
-  }
-
   @Patch(':identifier/add')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   addBalanceToAsset(

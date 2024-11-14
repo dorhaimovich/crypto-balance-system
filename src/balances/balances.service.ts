@@ -88,21 +88,6 @@ export class BalancesService {
     );
   }
 
-  async changeBalance(
-    id: string,
-    asset: BalanceIdentifier,
-    changeBalanceDto: ChangeBalanceDto,
-  ) {
-    const userIndex = await this.getUserIndex(id);
-    const balanceIndex = await this.getBalanceIndex(userIndex, asset);
-
-    return await this.DatabaseService.setData(
-      this.users_balances_db,
-      `/users[${userIndex}]/balances[${balanceIndex}]`,
-      changeBalanceDto,
-    );
-  }
-
   async addBalance(
     id: string,
     identifier: BalanceIdentifier,

@@ -1,21 +1,14 @@
-import {
-  IsNotEmpty,
-  IsString,
-  IsUppercase,
-  Length,
-  Min,
-} from 'class-validator';
+import { IsIn, IsNotEmpty, IsString, Min } from 'class-validator';
+import { Constants as c } from 'src/shared/constants';
+import { Coin } from 'src/shared/types';
 
 export class CreateBalanceDto {
-  @IsString()
-  @IsNotEmpty()
-  @Length(3, 4)
-  @IsUppercase()
-  currency: string;
+  @IsIn(c.COINS_LIST)
+  coin: Coin;
 
   @IsString()
   @IsNotEmpty()
-  coin: string;
+  symbol: string;
 
   @Min(0)
   @IsNotEmpty()

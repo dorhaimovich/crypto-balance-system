@@ -11,3 +11,7 @@ export interface CoinInfo {
   symbol: string;
   name: string;
 }
+
+export interface BalacesApiHeader {
+  'x-user-id': string;
+}

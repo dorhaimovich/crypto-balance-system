@@ -15,12 +15,18 @@ export class DatabaseService {
         if (!fs.existsSync(dataDir)) {
           await fs.promises.mkdir(dataDir);
         }
+
         const db = new JsonDB(
           new Config(path.join(dataDir, filename), true, false, '/'),
         );
+
         this.dbInstances.set(filename, db);
-      } catch (e) {
-        console.error(e); // handle this error
+      } catch (err) {
+        this.logger.log(
+          err,
+          `${DatabaseService.name}.${this.getDbInstance.name}`,
+        );
+        // Throw error while connecting to db
       }
     }
     return this.dbInstances.get(filename);

@@ -15,7 +15,7 @@ export class CreateBalanceDto {
 
   @IsString()
   @IsNotEmpty()
-  asset: string;
+  coin: string;
 
   @Min(0)
   @IsNotEmpty()

@@ -30,16 +30,16 @@ class IdentifierNotFoundException extends HttpException {
       `Asset or currency '${identifier}' not found!`,
       HttpStatus.NOT_FOUND,
       {
-        description: 'The user does not have this asset or currency',
+        description: 'The user does not have this coin or currency',
       },
     );
   }
 }
 
 class AssetAlreadyExistException extends HttpException {
-  constructor(asset: string) {
-    super(`Asset '${asset}' already exist!`, HttpStatus.BAD_REQUEST, {
-      description: 'The user already have this asset',
+  constructor(coin: string) {
+    super(`Asset '${coin}' already exist!`, HttpStatus.BAD_REQUEST, {
+      description: 'The user already have this coin',
     });
   }
 }

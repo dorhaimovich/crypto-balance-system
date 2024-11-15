@@ -60,7 +60,7 @@ export class BalancesService {
     return balanceIndex;
   }
 
-  async getAllBalances(id: string) {
+  async getAllBalances(id: string): Promise<BalanceInfo[]> {
     const userIndex = await this.getUserIndex(id);
 
     return await this.DatabaseService.getData(
@@ -69,7 +69,7 @@ export class BalancesService {
     );
   }
 
-  async getOneBalance(id: string, coin: string) {
+  async getOneBalance(id: string, coin: string): Promise<BalanceInfo> {
     const userIndex = await this.getUserIndex(id);
     const balanceIndex = await this.getBalanceIndex(userIndex, coin);
 
@@ -79,7 +79,10 @@ export class BalancesService {
     );
   }
 
-  async getTotalBalances(id: string, currency: string): Promise<number> {
+  async getTotalBalances(
+    id: string,
+    currency: string,
+  ): Promise<Record<string, number>> {
     const userIndex = await this.getUserIndex(id);
     const balances: BalanceInfo[] = await this.DatabaseService.getData(
       DataBaseFiles.USERS_BALANCES,
@@ -87,13 +90,13 @@ export class BalancesService {
     );
     const rates = await this.ratesService.getRates(
       currency,
-      balances.map((x) => x.coin),
+      balances.map((balance) => balance.coin),
     );
 
-    const x = balances.reduce((sum, balance) => {
+    const total = balances.reduce((sum, balance) => {
       return sum + rates[balance.coin] * balance.amount;
     }, 0);
-    return x;
+    return { currency: total };
   }
 
   async createBalance(id: string, createBalanceDto: CreateBalanceDto) {
@@ -160,7 +163,7 @@ export class BalancesService {
       throw new Error(); // changed it
     }
     if (amount < updateBalanceDto.amount) {
-      throw new InsufficientBalanceException(amount, coin);
+      throw new InsufficientBalanceException();
     }
     return await this.DatabaseService.setData(
       DataBaseFiles.USERS_BALANCES,

@@ -12,15 +12,16 @@ import {
   Ip,
 } from '@nestjs/common';
 import { BalancesService } from './balances.service';
-import { NoUserIdException } from 'src/shared/exceptions/http-exceptions';
+import {
+  NoUserIdException,
+  SymbolCoinMisMatch,
+} from 'src/shared/exceptions/http-exceptions';
 import { CreateBalanceDto } from './dto/create-balance.dto';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
 import { LoggerService } from 'src/logger/logger.service';
-
-// fix this
-type Asset = string;
-type Currency = string;
-export type BalanceIdentifier = Asset | Currency;
+import { BalacesApiHeader, BalanceInfo } from 'src/shared/interfaces';
+import { Coin } from 'src/shared/types';
+import { Constants as c } from 'src/shared/constants';
 
 @Controller('balances')
 export class BalancesController {
@@ -29,9 +30,12 @@ export class BalancesController {
   constructor(private readonly balancesService: BalancesService) {}
 
   @Get()
-  getAllBalances(@Ip() ip: string, @Headers() headers: object) {
+  getAllBalances(
+    @Ip() ip: string,
+    @Headers() headers: BalacesApiHeader,
+  ): Promise<BalanceInfo[]> {
     if (!headers['x-user-id']) {
-      throw new NoUserIdException();
+      throw new NoUserIdException(ip);
     }
 
     this.logger.log(
@@ -45,11 +49,11 @@ export class BalancesController {
   @Get(':coin')
   getOneBalance(
     @Ip() ip: string,
-    @Headers() headers: object,
-    @Param('coin') coin: string,
-  ) {
+    @Headers() headers: BalacesApiHeader,
+    @Param('coin') coin: Coin,
+  ): Promise<BalanceInfo> {
     if (!headers['x-user-id']) {
-      throw new NoUserIdException();
+      throw new NoUserIdException(ip);
     }
 
     this.logger.log(
@@ -64,11 +68,19 @@ export class BalancesController {
   @UsePipes(new ValidationPipe({ whitelist: true }))
   createBalance(
     @Ip() ip: string,
-    @Headers() headers: object, // change type
+    @Headers() headers: BalacesApiHeader,
     @Body() createBalanceDto: CreateBalanceDto,
   ) {
     if (!headers['x-user-id']) {
-      throw new NoUserIdException();
+      throw new NoUserIdException(ip);
+    }
+
+    if (c.COINS_SYMBOL_MAP[createBalanceDto.coin] !== createBalanceDto.symbol) {
+      this.logger.error(
+        'symbol does not match to the coin',
+        this.createBalance.name,
+      );
+      throw new SymbolCoinMisMatch();
     }
 
     this.logger.log(
@@ -85,11 +97,11 @@ export class BalancesController {
   @Get('currency/:currency')
   getTotalBalances(
     @Ip() ip: string,
-    @Headers() headers: object,
+    @Headers() headers: BalacesApiHeader,
     @Param('currency') currency: string,
   ) {
     if (!headers['x-user-id']) {
-      throw new NoUserIdException();
+      throw new NoUserIdException(ip);
     }
 
     this.logger.log(
@@ -103,16 +115,16 @@ export class BalancesController {
     );
   }
 
-  @Patch(':identifier/add')
+  @Patch(':coin/add')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   addBalanceToAsset(
     @Ip() ip: string,
-    @Headers() headers: object,
-    @Param('identifier') identifier: BalanceIdentifier,
+    @Headers() headers: BalacesApiHeader,
+    @Param('coin') coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
     if (!headers['x-user-id']) {
-      throw new NoUserIdException();
+      throw new NoUserIdException(ip);
     }
 
     this.logger.log(
@@ -122,21 +134,21 @@ export class BalancesController {
 
     return this.balancesService.addBalance(
       headers['x-user-id'],
-      identifier,
+      coin,
       updateBalanceDto,
     );
   }
 
-  @Patch(':identifier/substract')
+  @Patch(':coin/substract')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   substractBalanceFromAsset(
     @Ip() ip: string,
-    @Headers() headers: object,
-    @Param('identifier') identifier: BalanceIdentifier,
+    @Headers() headers: BalacesApiHeader,
+    @Param('coin') coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
     if (!headers['x-user-id']) {
-      throw new NoUserIdException();
+      throw new NoUserIdException(ip);
     }
 
     this.logger.log(
@@ -146,21 +158,21 @@ export class BalancesController {
 
     return this.balancesService.substractBalance(
       headers['x-user-id'],
-      identifier,
+      coin,
       updateBalanceDto,
     );
   }
 
-  @Patch(':identifier/set')
+  @Patch(':coin/set')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   setBalanceToAsset(
     @Ip() ip: string,
-    @Headers() headers: object,
-    @Param('identifier') identifier: BalanceIdentifier,
+    @Headers() headers: BalacesApiHeader,
+    @Param('coin') coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
     if (!headers['x-user-id']) {
-      throw new NoUserIdException();
+      throw new NoUserIdException(ip);
     }
 
     this.logger.log(
@@ -170,7 +182,7 @@ export class BalancesController {
 
     return this.balancesService.setBalance(
       headers['x-user-id'],
-      identifier,
+      coin,
       updateBalanceDto,
     );
   }
@@ -178,11 +190,11 @@ export class BalancesController {
   @Delete(':coin')
   deleteBalance(
     @Ip() ip: string,
-    @Headers() headers: object,
-    @Param('coin') coin: string,
+    @Headers() headers: BalacesApiHeader,
+    @Param('coin') coin: Coin,
   ) {
     if (!headers['x-user-id']) {
-      throw new NoUserIdException();
+      throw new NoUserIdException(ip);
     }
 
     this.logger.log(

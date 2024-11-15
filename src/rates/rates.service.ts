@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseService } from 'src/database/database.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -7,6 +7,9 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { DataBaseFiles } from 'src/shared/db-files';
 import { CoinInfo } from 'src/shared/interfaces';
+import { Coin } from 'src/shared/types';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class RatesService {
@@ -17,8 +20,41 @@ export class RatesService {
     private readonly databaseService: DatabaseService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.baseURl = this.configService.get<string>('COINGECKO_API_URL');
+  }
+
+  async getRates(
+    currency: string,
+    coinIds: Coin[],
+  ): Promise<Partial<Record<Coin, number>>> {
+    const rates: Partial<Record<Coin, number>> = {};
+
+    for (const coinId of coinIds) {
+      try {
+        const value = await this.cacheManager.get<number>(
+          `${coinId}-${currency}`,
+        );
+
+        if (value) {
+          console.log('value out from cache');
+          rates[coinId] = value;
+        } else {
+          const rate = await this.databaseService.getData(
+            DataBaseFiles.RATES,
+            `/${coinId}/${currency.toLowerCase()}`,
+          );
+
+          rates[coinId] = rate;
+          await this.cacheManager.set(`${coinId}-${currency}`, rate);
+        }
+      } catch (err) {
+        this.logger.error(err, this.getRates.name);
+      }
+    }
+
+    return rates;
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
@@ -76,6 +112,7 @@ export class RatesService {
         }),
       );
 
+      this.cacheManager.reset();
       this.databaseService.setData(DataBaseFiles.RATES, 'rates', data);
     } catch (err) {
       this.logger.error(err.response.data, this.updateRates.name);

@@ -24,8 +24,9 @@ export type BalanceIdentifier = Asset | Currency;
 
 @Controller('balances')
 export class BalancesController {
-  constructor(private readonly balancesService: BalancesService) {}
   private readonly logger = new LoggerService(BalancesController.name);
+
+  constructor(private readonly balancesService: BalancesService) {}
 
   @Get()
   getAllBalances(@Ip() ip: string, @Headers() headers: object) {
@@ -35,17 +36,17 @@ export class BalancesController {
 
     this.logger.log(
       `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      `${BalancesController.name}.${this.getAllBalances.name}`,
+      this.getAllBalances.name,
     );
 
     return this.balancesService.getAllBalances(headers['x-user-id']);
   }
 
-  @Get(':asset')
+  @Get(':coin')
   getOneBalance(
     @Ip() ip: string,
     @Headers() headers: object,
-    @Param('asset') asset: string,
+    @Param('coin') coin: string,
   ) {
     if (!headers['x-user-id']) {
       throw new NoUserIdException();
@@ -53,10 +54,10 @@ export class BalancesController {
 
     this.logger.log(
       `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      `${BalancesController.name}.${this.getOneBalance.name}`,
+      this.getOneBalance.name,
     );
 
-    return this.balancesService.getOneBalance(headers['x-user-id'], asset);
+    return this.balancesService.getOneBalance(headers['x-user-id'], coin);
   }
 
   @Post()
@@ -72,12 +73,33 @@ export class BalancesController {
 
     this.logger.log(
       `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      `${BalancesController.name}.${this.createBalance.name}`,
+      this.createBalance.name,
     );
 
     return this.balancesService.createBalance(
       headers['x-user-id'],
       createBalanceDto,
+    );
+  }
+
+  @Get('currency/:currency')
+  getTotalBalances(
+    @Ip() ip: string,
+    @Headers() headers: object,
+    @Param('currency') currency: string,
+  ) {
+    if (!headers['x-user-id']) {
+      throw new NoUserIdException();
+    }
+
+    this.logger.log(
+      `User '${headers['x-user-id']}' Requesed for total balances in '${currency}' from ip '${ip}'`,
+      this.getTotalBalances.name,
+    );
+
+    return this.balancesService.getTotalBalances(
+      headers['x-user-id'],
+      currency,
     );
   }
 
@@ -95,7 +117,7 @@ export class BalancesController {
 
     this.logger.log(
       `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      `${BalancesController.name}.${this.addBalanceToAsset.name}`,
+      this.addBalanceToAsset.name,
     );
 
     return this.balancesService.addBalance(
@@ -119,7 +141,7 @@ export class BalancesController {
 
     this.logger.log(
       `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      `${BalancesController.name}.${this.substractBalanceFromAsset.name}`,
+      this.substractBalanceFromAsset.name,
     );
 
     return this.balancesService.substractBalance(
@@ -143,7 +165,7 @@ export class BalancesController {
 
     this.logger.log(
       `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      `${BalancesController.name}.${this.setBalanceToAsset.name}`,
+      this.setBalanceToAsset.name,
     );
 
     return this.balancesService.setBalance(
@@ -153,11 +175,11 @@ export class BalancesController {
     );
   }
 
-  @Delete(':asset')
+  @Delete(':coin')
   deleteBalance(
     @Ip() ip: string,
     @Headers() headers: object,
-    @Param('asset') asset: string,
+    @Param('coin') coin: string,
   ) {
     if (!headers['x-user-id']) {
       throw new NoUserIdException();
@@ -165,9 +187,9 @@ export class BalancesController {
 
     this.logger.log(
       `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      `${BalancesController.name}.${this.deleteBalance.name}`,
+      this.deleteBalance.name,
     );
 
-    return this.balancesService.deleteBalance(headers['x-user-id'], asset);
+    return this.balancesService.deleteBalance(headers['x-user-id'], coin);
   }
 }

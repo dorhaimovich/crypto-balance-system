@@ -26,10 +26,7 @@ export class DatabaseService {
       this.dbInstances.set(filename, db);
       return db;
     } catch (err) {
-      this.logger.log(
-        err,
-        `${DatabaseService.name}.${this.getDbInstance.name}`,
-      );
+      this.logger.log(err, this.getDbInstance.name);
       // Throw error while connecting to db
     }
 
@@ -42,7 +39,7 @@ export class DatabaseService {
       const data = await db.getData(path);
       return data;
     } catch (error) {
-      this.logger.error(error, `${DatabaseService.name}.${this.getData.name}`);
+      this.logger.error(error, this.getData.name);
       return null;
     }
   }
@@ -59,10 +56,7 @@ export class DatabaseService {
       if (index == -1) return null;
       return index;
     } catch (error) {
-      this.logger.error(
-        error,
-        `${DatabaseService.name}.${this.getArrayIndex.name}`,
-      );
+      this.logger.error(error, this.getArrayIndex.name);
       return null;
     }
   }
@@ -77,7 +71,7 @@ export class DatabaseService {
       db.push(path, data);
       return data;
     } catch (error) {
-      this.logger.error(error, `${DatabaseService.name}.${this.setData.name}`);
+      this.logger.error(error, this.setData.name);
       return null;
     }
   }
@@ -89,10 +83,7 @@ export class DatabaseService {
       await db.delete(path);
       return data;
     } catch (error) {
-      this.logger.error(
-        error,
-        `${DatabaseService.name}.${this.removeData.name}`,
-      );
+      this.logger.error(error, this.removeData.name);
       return null;
     }
   }

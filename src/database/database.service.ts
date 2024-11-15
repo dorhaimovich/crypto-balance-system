@@ -5,30 +5,31 @@ import * as fs from 'fs';
 import { LoggerService } from 'src/logger/logger.service';
 @Injectable()
 export class DatabaseService {
-  private dbInstances: Map<string, JsonDB> = new Map();
   private readonly logger = new LoggerService(DatabaseService.name);
+  private dbInstances: Map<string, JsonDB> = new Map();
 
   private async getDbInstance(filename: string): Promise<JsonDB> {
-    if (!this.dbInstances.has(filename)) {
-      try {
-        const dataDir = path.resolve(process.cwd(), 'data');
-        if (!fs.existsSync(dataDir)) {
-          await fs.promises.mkdir(dataDir);
-        }
-
-        const db = new JsonDB(
-          new Config(path.join(dataDir, filename), true, false, '/'),
-        );
-
-        this.dbInstances.set(filename, db);
-      } catch (err) {
-        this.logger.log(
-          err,
-          `${DatabaseService.name}.${this.getDbInstance.name}`,
-        );
-        // Throw error while connecting to db
-      }
+    if (this.dbInstances.has(filename)) {
+      return this.dbInstances.get(filename);
     }
+
+    try {
+      const dataDir = path.resolve(process.cwd(), 'data');
+      if (!fs.existsSync(dataDir)) {
+        await fs.promises.mkdir(dataDir);
+      }
+
+      const db = new JsonDB(
+        new Config(path.join(dataDir, filename), true, false, '/'),
+      );
+
+      this.dbInstances.set(filename, db);
+      return db;
+    } catch (err) {
+      this.logger.log(err, this.getDbInstance.name);
+      // Throw error while connecting to db
+    }
+
     return this.dbInstances.get(filename);
   }
 
@@ -38,7 +39,7 @@ export class DatabaseService {
       const data = await db.getData(path);
       return data;
     } catch (error) {
-      this.logger.error(error, `${DatabaseService.name}.${this.getData.name}`);
+      this.logger.error(error, this.getData.name);
       return null;
     }
   }
@@ -55,10 +56,7 @@ export class DatabaseService {
       if (index == -1) return null;
       return index;
     } catch (error) {
-      this.logger.error(
-        error,
-        `${DatabaseService.name}.${this.getArrayIndex.name}`,
-      );
+      this.logger.error(error, this.getArrayIndex.name);
       return null;
     }
   }
@@ -73,7 +71,7 @@ export class DatabaseService {
       db.push(path, data);
       return data;
     } catch (error) {
-      this.logger.error(error, `${DatabaseService.name}.${this.setData.name}`);
+      this.logger.error(error, this.setData.name);
       return null;
     }
   }
@@ -85,10 +83,7 @@ export class DatabaseService {
       await db.delete(path);
       return data;
     } catch (error) {
-      this.logger.error(
-        error,
-        `${DatabaseService.name}.${this.removeData.name}`,
-      );
+      this.logger.error(error, this.removeData.name);
       return null;
     }
   }

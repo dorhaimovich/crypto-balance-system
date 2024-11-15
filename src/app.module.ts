@@ -10,8 +10,9 @@ import { BalancesModule } from './balances/balances.module';
 import { DatabaseModule } from './database/database.module';
 import { RatesModule } from './rates/rates.module';
 import { LoggerModule } from './logger/logger.module';
-import { Throttlers } from './shared/constants/throttlers.constants';
+import { Throttlers } from './shared/throttlers';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -22,6 +23,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     ThrottlerModule.forRoot(Throttlers.getAllThrottlers()),
     ScheduleModule.forRoot(),
     LoggerModule,
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 0,
+    }),
   ],
   controllers: [AppController],
   providers: [

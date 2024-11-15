@@ -31,13 +31,18 @@ export class LoggerService extends ConsoleLogger {
     }
   }
 
-  log(message: any, context: string = this.context) {
-    this.logToFile('logs.log', 'log', message, context);
+  log(message: any, context: string) {
+    this.logToFile('logs.log', 'log', message, `${this.context}.${context}`);
     super.log(message, context);
   }
 
-  error(message: string | object, stackOrContext: string = this.context) {
-    this.logToFile('errors.log', 'error', message, stackOrContext);
+  error(message: string | object, stackOrContext: string) {
+    this.logToFile(
+      'errors.log',
+      'error',
+      message,
+      `${this.context}.${stackOrContext}`,
+    );
     super.error(message, stackOrContext);
   }
 }

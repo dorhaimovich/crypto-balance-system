@@ -1,12 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseService } from 'src/database/database.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { LoggerService } from 'src/logger/logger.service';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { DataBaseFiles } from 'src/shared/constants/db-files.constants';
-import { Coin } from 'src/shared/interfaces/coin.interface';
+import { DataBaseFiles } from 'src/shared/db-files';
+import { CoinInfo } from 'src/shared/interfaces';
+import { Coin } from 'src/shared/types';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+
 @Injectable()
 export class RatesService {
   private readonly logger = new LoggerService(RatesService.name);
@@ -16,12 +20,45 @@ export class RatesService {
     private readonly databaseService: DatabaseService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.baseURl = this.configService.get<string>('COINGECKO_API_URL');
   }
 
+  async getRates(
+    currency: string,
+    coinIds: Coin[],
+  ): Promise<Partial<Record<Coin, number>>> {
+    const rates: Partial<Record<Coin, number>> = {};
+
+    for (const coinId of coinIds) {
+      try {
+        const value = await this.cacheManager.get<number>(
+          `${coinId}-${currency}`,
+        );
+
+        if (value) {
+          console.log('value out from cache');
+          rates[coinId] = value;
+        } else {
+          const rate = await this.databaseService.getData(
+            DataBaseFiles.RATES,
+            `/${coinId}/${currency.toLowerCase()}`,
+          );
+
+          rates[coinId] = rate;
+          await this.cacheManager.set(`${coinId}-${currency}`, rate);
+        }
+      } catch (err) {
+        this.logger.error(err, this.getRates.name);
+      }
+    }
+
+    return rates;
+  }
+
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
-  async getSupportedCurrencies() {
+  private async updateSupportedCurrencies(): Promise<void> {
     const endpoint = `${this.baseURl}simple/supported_vs_currencies`;
     try {
       const { data } = await firstValueFrom(
@@ -40,18 +77,18 @@ export class RatesService {
         data,
       );
     } catch (err) {
-      this.logger.error(err.response.data, this.getSupportedCurrencies.name);
+      this.logger.error(err.response.data, this.updateSupportedCurrencies.name);
     } finally {
-      this.logger.log('Job Done', this.getSupportedCurrencies.name);
+      this.logger.log('Job Done', this.updateSupportedCurrencies.name);
     }
   }
 
   // clean that method
   @Cron(CronExpression.EVERY_DAY_AT_4AM)
-  async getRates() {
+  private async updateRates(): Promise<void> {
     const endpoint = `${this.baseURl}simple/price`;
 
-    const coins: Coin[] = await this.databaseService.getData(
+    const coins: CoinInfo[] = await this.databaseService.getData(
       DataBaseFiles.COINS,
       '/coins',
     );
@@ -75,11 +112,12 @@ export class RatesService {
         }),
       );
 
+      this.cacheManager.reset();
       this.databaseService.setData(DataBaseFiles.RATES, 'rates', data);
     } catch (err) {
-      this.logger.error(err.response.data, this.getRates.name);
+      this.logger.error(err.response.data, this.updateRates.name);
     } finally {
-      this.logger.log('Job Done', this.getRates.name);
+      this.logger.log('Job Done', this.updateRates.name);
     }
   }
 }

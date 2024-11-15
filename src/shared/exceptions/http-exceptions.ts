@@ -1,64 +1,47 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 class NoUserIdException extends HttpException {
-  constructor() {
-    super('Missing user id', HttpStatus.BAD_REQUEST, {
-      description: 'Request sent without user id in header',
-    });
+  constructor(ip: string) {
+    super(`Missing user id sent from ip '${ip}'`, HttpStatus.BAD_REQUEST);
   }
 }
 
 class UserNotFoundException extends HttpException {
   constructor(id: string) {
-    super(`User id '${id}' not found!`, HttpStatus.NOT_FOUND, {
-      description: 'The user id not found in the database',
-    });
+    super(`User id '${id}' not found!`, HttpStatus.NOT_FOUND);
   }
 }
 
 class UserAlreadyExistException extends HttpException {
   constructor(userId: string) {
-    super(`User ID '${userId}' already exist!`, HttpStatus.BAD_REQUEST, {
-      description: 'The user already exist',
-    });
+    super(`User ID '${userId}' already exist!`, HttpStatus.BAD_REQUEST);
   }
 }
 
 class IdentifierNotFoundException extends HttpException {
-  constructor(identifier: string) {
-    super(
-      `Asset or currency '${identifier}' not found!`,
-      HttpStatus.NOT_FOUND,
-      {
-        description: 'The user does not have this asset or currency',
-      },
-    );
+  constructor(coin: string) {
+    super(`coin '${coin}' not found!`, HttpStatus.NOT_FOUND);
   }
 }
 
 class AssetAlreadyExistException extends HttpException {
-  constructor(asset: string) {
-    super(`Asset '${asset}' already exist!`, HttpStatus.BAD_REQUEST, {
-      description: 'The user already have this asset',
-    });
+  constructor(coin: string) {
+    super(`Coin '${coin}' already exist!`, HttpStatus.BAD_REQUEST);
   }
 }
-class CurrencyAlreadyExistException extends HttpException {
-  constructor(currency: string) {
-    super(`Currency '${currency}' already exist!`, HttpStatus.BAD_REQUEST, {
-      description: 'The user already have this currency',
-    });
-  }
-}
+
 class InsufficientBalanceException extends HttpException {
-  constructor(amount: number, identifier: string) {
+  constructor() {
     super(
-      'The user does not have enough balance from that currency',
+      'The user does not have enough balance from that coin',
       HttpStatus.BAD_REQUEST,
-      {
-        description: `there is only '${amount} ${identifier}'`,
-      },
     );
+  }
+}
+
+class SymbolCoinMisMatch extends HttpException {
+  constructor() {
+    super('the symbol does not match to the coin', HttpStatus.BAD_REQUEST);
   }
 }
 
@@ -68,6 +51,6 @@ export {
   UserAlreadyExistException,
   IdentifierNotFoundException,
   AssetAlreadyExistException,
-  CurrencyAlreadyExistException,
   InsufficientBalanceException,
+  SymbolCoinMisMatch,
 };

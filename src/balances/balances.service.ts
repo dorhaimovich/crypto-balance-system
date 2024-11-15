@@ -8,9 +8,10 @@ import {
   InsufficientBalanceException,
   UserNotFoundException,
 } from 'src/shared/exceptions/http-exceptions';
+import { DataBaseFiles } from 'src/shared/constants/db-files.constants';
 @Injectable()
 export class BalancesService {
-  users_balances_db = 'src/database/data/users-balances';
+  users_balances_db = DataBaseFiles.USERS_BALANCES;
   constructor(private readonly DatabaseService: DatabaseService) {
     this.initDB();
   }

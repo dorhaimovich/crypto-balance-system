@@ -9,7 +9,7 @@ const CoinsList = [
   'binance-usd',
   'solana',
   'polkadot',
-];
+] as const;
 
 const CoinSymbolMap = {
   tether: 'usdt',
@@ -22,7 +22,7 @@ const CoinSymbolMap = {
   'binance-usd': 'busd',
   solana: 'sol',
   polkadot: 'dot',
-};
+} as const;
 
 export class Constants {
   static COINS_SYMBOL_MAP = CoinSymbolMap;

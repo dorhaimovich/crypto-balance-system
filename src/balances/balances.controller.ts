@@ -6,24 +6,33 @@ import {
   Patch,
   Post,
   Headers,
-  ValidationPipe,
   UsePipes,
   Delete,
   Ip,
 } from '@nestjs/common';
 import { BalancesService } from './balances.service';
 import {
-  NoUserIdException,
-  SymbolCoinMisMatch,
-} from 'src/shared/exceptions/http-exceptions';
-import { CreateBalanceDto } from './dto/create-balance.dto';
-import { UpdateBalanceDto } from './dto/update-balance.dto';
+  UpdateBalanceDto,
+  updateBalanceSchema,
+} from './schema/update-balance.schema';
 import { LoggerService } from 'src/logger/logger.service';
 import { BalacesApiHeader, BalanceInfo } from 'src/shared/interfaces';
-import { Coin } from 'src/shared/types';
-import { Constants as c } from 'src/shared/constants';
+import { Coin, CoinEnum } from 'src/shared/schemas/coin.schema';
+import { RequireUserId } from './guards/user-id.guard';
+import { logRequest } from 'src/shared/utils';
+import { ZodValidationPipe } from 'src/shared/pipes/zod-validation.pipe';
+import {
+  CreateBalanceDto,
+  createBalanceSchema,
+} from './schema/create-balance.schema';
+import {
+  CoinsPercentagesDto,
+  coinsPercentagesSchema,
+} from './schema/rebalance.schema';
+import { generateCurrencyEnum } from 'src/shared/schemas/currency.schema';
 
 @Controller('balances')
+@RequireUserId()
 export class BalancesController {
   private readonly logger = new LoggerService(BalancesController.name);
 
@@ -34,13 +43,11 @@ export class BalancesController {
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
   ): Promise<BalanceInfo[]> {
-    if (!headers['x-user-id']) {
-      throw new NoUserIdException(ip);
-    }
-
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
+    logRequest(
+      headers['x-user-id'],
+      ip,
       this.getAllBalances.name,
+      BalancesController.name,
     );
 
     return this.balancesService.getAllBalances(headers['x-user-id']);
@@ -50,42 +57,30 @@ export class BalancesController {
   getOneBalance(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin') coin: Coin,
+    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
   ): Promise<BalanceInfo> {
-    if (!headers['x-user-id']) {
-      throw new NoUserIdException(ip);
-    }
-
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
+    logRequest(
+      headers['x-user-id'],
+      ip,
       this.getOneBalance.name,
+      BalancesController.name,
     );
 
     return this.balancesService.getOneBalance(headers['x-user-id'], coin);
   }
 
   @Post()
-  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @UsePipes(new ZodValidationPipe(createBalanceSchema))
   createBalance(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
     @Body() createBalanceDto: CreateBalanceDto,
   ) {
-    if (!headers['x-user-id']) {
-      throw new NoUserIdException(ip);
-    }
-
-    if (c.COINS_SYMBOL_MAP[createBalanceDto.coin] !== createBalanceDto.symbol) {
-      this.logger.error(
-        'symbol does not match to the coin',
-        this.createBalance.name,
-      );
-      throw new SymbolCoinMisMatch();
-    }
-
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
+    logRequest(
+      headers['x-user-id'],
+      ip,
       this.createBalance.name,
+      BalancesController.name,
     );
 
     return this.balancesService.createBalance(
@@ -98,15 +93,14 @@ export class BalancesController {
   getTotalBalances(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('currency') currency: string,
+    @Param('currency', new ZodValidationPipe(generateCurrencyEnum()))
+    currency: string,
   ) {
-    if (!headers['x-user-id']) {
-      throw new NoUserIdException(ip);
-    }
-
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for total balances in '${currency}' from ip '${ip}'`,
+    logRequest(
+      headers['x-user-id'],
+      ip,
       this.getTotalBalances.name,
+      BalancesController.name,
     );
 
     return this.balancesService.getTotalBalances(
@@ -115,21 +109,39 @@ export class BalancesController {
     );
   }
 
-  @Patch(':coin/add')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  addBalanceToAsset(
+  @Patch('/rebalance')
+  @UsePipes(new ZodValidationPipe(coinsPercentagesSchema))
+  rebalance(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin') coin: Coin,
+    @Body() coins_precentages: CoinsPercentagesDto,
+  ) {
+    logRequest(
+      headers['x-user-id'],
+      ip,
+      this.rebalance.name,
+      BalancesController.name,
+    );
+
+    return this.balancesService.rebalance(
+      headers['x-user-id'],
+      coins_precentages,
+    );
+  }
+
+  @Patch(':coin/add')
+  @UsePipes(new ZodValidationPipe(updateBalanceSchema))
+  addBalanceToCoin(
+    @Ip() ip: string,
+    @Headers() headers: BalacesApiHeader,
+    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
-    if (!headers['x-user-id']) {
-      throw new NoUserIdException(ip);
-    }
-
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      this.addBalanceToAsset.name,
+    logRequest(
+      headers['x-user-id'],
+      ip,
+      this.addBalanceToCoin.name,
+      BalancesController.name,
     );
 
     return this.balancesService.addBalance(
@@ -140,20 +152,18 @@ export class BalancesController {
   }
 
   @Patch(':coin/substract')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  substractBalanceFromAsset(
+  @UsePipes(new ZodValidationPipe(updateBalanceSchema))
+  substractBalanceFromCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin') coin: Coin,
+    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
-    if (!headers['x-user-id']) {
-      throw new NoUserIdException(ip);
-    }
-
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      this.substractBalanceFromAsset.name,
+    logRequest(
+      headers['x-user-id'],
+      ip,
+      this.substractBalanceFromCoin.name,
+      BalancesController.name,
     );
 
     return this.balancesService.substractBalance(
@@ -164,20 +174,18 @@ export class BalancesController {
   }
 
   @Patch(':coin/set')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  setBalanceToAsset(
+  @UsePipes(new ZodValidationPipe(updateBalanceSchema))
+  setBalanceToCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin') coin: Coin,
+    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
-    if (!headers['x-user-id']) {
-      throw new NoUserIdException(ip);
-    }
-
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      this.setBalanceToAsset.name,
+    logRequest(
+      headers['x-user-id'],
+      ip,
+      this.setBalanceToCoin.name,
+      BalancesController.name,
     );
 
     return this.balancesService.setBalance(
@@ -191,15 +199,13 @@ export class BalancesController {
   deleteBalance(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin') coin: Coin,
+    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
   ) {
-    if (!headers['x-user-id']) {
-      throw new NoUserIdException(ip);
-    }
-
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
+    logRequest(
+      headers['x-user-id'],
+      ip,
       this.deleteBalance.name,
+      BalancesController.name,
     );
 
     return this.balancesService.deleteBalance(headers['x-user-id'], coin);

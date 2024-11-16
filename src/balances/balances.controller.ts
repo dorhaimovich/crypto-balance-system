@@ -20,6 +20,7 @@ import { BalacesApiHeader, BalanceInfo } from 'src/shared/interfaces';
 import { Coin } from 'src/shared/types';
 import { Constants as c } from 'src/shared/constants';
 import { RequireUserId } from './guards/user-id.guard';
+import { logRequest } from 'src/shared/utils';
 
 @Controller('balances')
 @RequireUserId()
@@ -33,9 +34,11 @@ export class BalancesController {
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
   ): Promise<BalanceInfo[]> {
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
+    logRequest(
+      headers['x-user-id'],
+      ip,
       this.getAllBalances.name,
+      BalancesController.name,
     );
 
     return this.balancesService.getAllBalances(headers['x-user-id']);
@@ -47,9 +50,11 @@ export class BalancesController {
     @Headers() headers: BalacesApiHeader,
     @Param('coin') coin: Coin,
   ): Promise<BalanceInfo> {
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
+    logRequest(
+      headers['x-user-id'],
+      ip,
       this.getOneBalance.name,
+      BalancesController.name,
     );
 
     return this.balancesService.getOneBalance(headers['x-user-id'], coin);
@@ -62,9 +67,16 @@ export class BalancesController {
     @Headers() headers: BalacesApiHeader,
     @Body() createBalanceDto: CreateBalanceDto,
   ) {
+    logRequest(
+      headers['x-user-id'],
+      ip,
+      this.createBalance.name,
+      BalancesController.name,
+    );
+
     if (c.COINS_SYMBOL_MAP[createBalanceDto.coin] !== createBalanceDto.symbol) {
       this.logger.error(
-        'symbol does not match to the coin',
+        'The symbol does not match the expected symbol for the coin',
         this.createBalance.name,
       );
       throw new SymbolCoinMismatchException(
@@ -72,11 +84,6 @@ export class BalancesController {
         createBalanceDto.symbol,
       );
     }
-
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      this.createBalance.name,
-    );
 
     return this.balancesService.createBalance(
       headers['x-user-id'],
@@ -90,9 +97,11 @@ export class BalancesController {
     @Headers() headers: BalacesApiHeader,
     @Param('currency') currency: string,
   ) {
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for total balances in '${currency}' from ip '${ip}'`,
+    logRequest(
+      headers['x-user-id'],
+      ip,
       this.getTotalBalances.name,
+      BalancesController.name,
     );
 
     return this.balancesService.getTotalBalances(
@@ -107,9 +116,11 @@ export class BalancesController {
     @Headers() headers: BalacesApiHeader,
     @Body() coins_precentages: Record<Coin, number>,
   ) {
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for rebalance from ip '${ip}'`,
-      this.createBalance.name,
+    logRequest(
+      headers['x-user-id'],
+      ip,
+      this.rebalance.name,
+      BalancesController.name,
     );
 
     return this.balancesService.rebalance(
@@ -120,15 +131,17 @@ export class BalancesController {
 
   @Patch(':coin/add')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  addBalanceToAsset(
+  addBalanceToCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
     @Param('coin') coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      this.addBalanceToAsset.name,
+    logRequest(
+      headers['x-user-id'],
+      ip,
+      this.addBalanceToCoin.name,
+      BalancesController.name,
     );
 
     return this.balancesService.addBalance(
@@ -140,15 +153,17 @@ export class BalancesController {
 
   @Patch(':coin/substract')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  substractBalanceFromAsset(
+  substractBalanceFromCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
     @Param('coin') coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      this.substractBalanceFromAsset.name,
+    logRequest(
+      headers['x-user-id'],
+      ip,
+      this.substractBalanceFromCoin.name,
+      BalancesController.name,
     );
 
     return this.balancesService.substractBalance(
@@ -160,15 +175,17 @@ export class BalancesController {
 
   @Patch(':coin/set')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  setBalanceToAsset(
+  setBalanceToCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
     @Param('coin') coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
-      this.setBalanceToAsset.name,
+    logRequest(
+      headers['x-user-id'],
+      ip,
+      this.setBalanceToCoin.name,
+      BalancesController.name,
     );
 
     return this.balancesService.setBalance(
@@ -184,9 +201,11 @@ export class BalancesController {
     @Headers() headers: BalacesApiHeader,
     @Param('coin') coin: Coin,
   ) {
-    this.logger.log(
-      `User '${headers['x-user-id']}' Requesed for all balances from ip '${ip}'`,
+    logRequest(
+      headers['x-user-id'],
+      ip,
       this.deleteBalance.name,
+      BalancesController.name,
     );
 
     return this.balancesService.deleteBalance(headers['x-user-id'], coin);

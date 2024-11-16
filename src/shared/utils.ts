@@ -1,7 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-
-export { getDirPath, getFormattedTimeStamp };
+import { LoggerService } from 'src/logger/logger.service';
 
 const getDirPath = async (dirPath: string): Promise<string> => {
   const dataDir = path.resolve(process.cwd(), dirPath);
@@ -18,3 +17,19 @@ const getFormattedTimeStamp = () => {
     timeZone: 'Asia/Jerusalem',
   }).format(new Date());
 };
+
+const logRequest = (
+  user: string,
+  ip: string,
+  methodName: string,
+  serviceName: string,
+): void => {
+  const logger = new LoggerService(serviceName);
+
+  logger.log(
+    `User '${user}' made an API request from IP address '${ip}'`,
+    methodName,
+  );
+};
+
+export { getDirPath, getFormattedTimeStamp, logRequest };

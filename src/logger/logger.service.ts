@@ -10,7 +10,7 @@ export class LoggerService extends ConsoleLogger {
     logType: string,
     message: any,
     ctx: string,
-  ) {
+  ): Promise<void> {
     const formattedEntry = `[${getFormattedTimeStamp()}] [${logType.toUpperCase()}] [${ctx}] ${message}\n`;
 
     try {
@@ -24,13 +24,13 @@ export class LoggerService extends ConsoleLogger {
     }
   }
 
-  log(message: any, context: string) {
+  log(message: any, context: string): void {
     const fileName = 'logs.log';
     this.logToFile(fileName, 'log', message, `${this.context}.${context}`);
     super.log(message, context);
   }
 
-  error(message: string | object, context: string) {
+  error(message: string | object, context: string): void {
     const fileName = 'errors.log';
     this.logToFile(fileName, 'error', message, `${this.context}.${context}`);
     super.error(message, context);

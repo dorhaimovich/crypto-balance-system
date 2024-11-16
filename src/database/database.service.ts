@@ -28,10 +28,10 @@ export class DatabaseService {
     }
   }
 
-  async getData(filename: string, path: string) {
+  async getData<T>(filename: string, path: string): Promise<T> {
     try {
       const db = await this.getDbInstance(filename);
-      const data = await db.getData(path);
+      const data: T = await db.getData(path);
       return data;
     } catch (error) {
       this.logger.error(error, this.getData.name);
@@ -44,7 +44,7 @@ export class DatabaseService {
     path: string,
     value: any,
     key: string = 'id',
-  ): Promise<number | null> {
+  ): Promise<number> {
     try {
       const db = await this.getDbInstance(filename);
       const index = await db.getIndex(path, value, key);
@@ -56,11 +56,7 @@ export class DatabaseService {
     }
   }
 
-  async setData(
-    filename: string,
-    path: string,
-    data: any,
-  ): Promise<void | null> {
+  async setData<T>(filename: string, path: string, data: T): Promise<T> {
     try {
       const db = await this.getDbInstance(filename);
       db.push(path, data);
@@ -71,10 +67,10 @@ export class DatabaseService {
     }
   }
 
-  async removeData(filename: string, path: string) {
+  async removeData<T>(filename: string, path: string): Promise<T> {
     try {
       const db = await this.getDbInstance(filename);
-      const data = await db.getData(path);
+      const data: T = await db.getData(path);
       await db.delete(path);
       return data;
     } catch (error) {

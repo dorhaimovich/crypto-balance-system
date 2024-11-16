@@ -17,7 +17,7 @@ import {
 } from './schema/update-balance.schema';
 import { LoggerService } from 'src/logger/logger.service';
 import { BalacesApiHeader, BalanceInfo } from 'src/shared/interfaces';
-import { Coin, CoinEnum } from 'src/shared/schemas/coin.schema';
+import { Coin, CoinSchema } from 'src/shared/schemas/coin.schema';
 import { RequireUserId } from './guards/user-id.guard';
 import { logRequest } from 'src/shared/utils';
 import { ZodValidationPipe } from 'src/shared/pipes/zod-validation.pipe';
@@ -57,7 +57,7 @@ export class BalancesController {
   getOneBalance(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
+    @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
   ): Promise<BalanceInfo> {
     logRequest(
       headers['x-user-id'],
@@ -75,7 +75,7 @@ export class BalancesController {
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
     @Body() createBalanceDto: CreateBalanceDto,
-  ) {
+  ): Promise<CreateBalanceDto> {
     logRequest(
       headers['x-user-id'],
       ip,
@@ -95,7 +95,7 @@ export class BalancesController {
     @Headers() headers: BalacesApiHeader,
     @Param('currency', new ZodValidationPipe(generateCurrencyEnum()))
     currency: string,
-  ) {
+  ): Promise<Record<string, number>> {
     logRequest(
       headers['x-user-id'],
       ip,
@@ -115,7 +115,7 @@ export class BalancesController {
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
     @Body() coins_precentages: CoinsPercentagesDto,
-  ) {
+  ): Promise<BalanceInfo[]> {
     logRequest(
       headers['x-user-id'],
       ip,
@@ -130,13 +130,13 @@ export class BalancesController {
   }
 
   @Patch(':coin/add')
-  @UsePipes(new ZodValidationPipe(updateBalanceSchema))
   addBalanceToCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
-    @Body() updateBalanceDto: UpdateBalanceDto,
-  ) {
+    @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
+    @Body(new ZodValidationPipe(updateBalanceSchema))
+    updateBalanceDto: UpdateBalanceDto,
+  ): Promise<number> {
     logRequest(
       headers['x-user-id'],
       ip,
@@ -152,13 +152,13 @@ export class BalancesController {
   }
 
   @Patch(':coin/substract')
-  @UsePipes(new ZodValidationPipe(updateBalanceSchema))
   substractBalanceFromCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
-    @Body() updateBalanceDto: UpdateBalanceDto,
-  ) {
+    @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
+    @Body(new ZodValidationPipe(updateBalanceSchema))
+    updateBalanceDto: UpdateBalanceDto,
+  ): Promise<number> {
     logRequest(
       headers['x-user-id'],
       ip,
@@ -174,13 +174,13 @@ export class BalancesController {
   }
 
   @Patch(':coin/set')
-  @UsePipes(new ZodValidationPipe(updateBalanceSchema))
   setBalanceToCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
-    @Body() updateBalanceDto: UpdateBalanceDto,
-  ) {
+    @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
+    @Body(new ZodValidationPipe(updateBalanceSchema))
+    updateBalanceDto: UpdateBalanceDto,
+  ): Promise<number> {
     logRequest(
       headers['x-user-id'],
       ip,
@@ -199,8 +199,8 @@ export class BalancesController {
   deleteBalance(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
-  ) {
+    @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
+  ): Promise<BalanceInfo> {
     logRequest(
       headers['x-user-id'],
       ip,

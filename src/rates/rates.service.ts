@@ -7,7 +7,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { DataBaseFiles } from 'src/shared/db-files';
 import { CoinInfo } from 'src/shared/interfaces';
-import { Coin } from 'src/shared/types';
+import { Coin } from 'src/shared/schemas/coin.schema';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 

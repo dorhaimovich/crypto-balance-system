@@ -35,7 +35,6 @@ $ npm install
 ```
 
 3. Add .env file to root folder
-4. 
 
 ### Compile and run the project
 

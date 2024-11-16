@@ -17,7 +17,10 @@ class UserNotFoundException extends HttpException {
 
 class CoinNotFoundException extends HttpException {
   constructor(coin: string) {
-    super(`The coin '${coin}' was not found.`, HttpStatus.NOT_FOUND);
+    super(
+      `The Coin '${coin}' was not found in the user's database.`,
+      HttpStatus.NOT_FOUND,
+    );
   }
 }
 
@@ -66,6 +69,12 @@ class UnsupportedCoinsException extends HttpException {
   }
 }
 
+class ValidationFailedException extends HttpException {
+  constructor(error: unknown) {
+    super(`Zod validation exception: ${error}`, HttpStatus.BAD_REQUEST);
+  }
+}
+
 export {
   NoUserIdException,
   UserNotFoundException,
@@ -75,4 +84,5 @@ export {
   SymbolCoinMismatchException,
   InvalidTargetPercentageException,
   UnsupportedCoinsException,
+  ValidationFailedException,
 };

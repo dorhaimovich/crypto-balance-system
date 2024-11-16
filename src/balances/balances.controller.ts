@@ -6,21 +6,30 @@ import {
   Patch,
   Post,
   Headers,
-  ValidationPipe,
   UsePipes,
   Delete,
   Ip,
 } from '@nestjs/common';
 import { BalancesService } from './balances.service';
-import { SymbolCoinMismatchException } from 'src/shared/exceptions/http.exceptions';
-import { CreateBalanceDto } from './dto/create-balance.dto';
-import { UpdateBalanceDto } from './dto/update-balance.dto';
+import {
+  UpdateBalanceDto,
+  updateBalanceSchema,
+} from './schema/update-balance.schema';
 import { LoggerService } from 'src/logger/logger.service';
 import { BalacesApiHeader, BalanceInfo } from 'src/shared/interfaces';
-import { Coin } from 'src/shared/types';
-import { Constants as c } from 'src/shared/constants';
+import { Coin, CoinEnum } from 'src/shared/schemas/coin.schema';
 import { RequireUserId } from './guards/user-id.guard';
 import { logRequest } from 'src/shared/utils';
+import { ZodValidationPipe } from 'src/shared/pipes/zod-validation.pipe';
+import {
+  CreateBalanceDto,
+  createBalanceSchema,
+} from './schema/create-balance.schema';
+import {
+  CoinsPercentagesDto,
+  coinsPercentagesSchema,
+} from './schema/rebalance.schema';
+import { generateCurrencyEnum } from 'src/shared/schemas/currency.schema';
 
 @Controller('balances')
 @RequireUserId()
@@ -48,7 +57,7 @@ export class BalancesController {
   getOneBalance(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin') coin: Coin,
+    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
   ): Promise<BalanceInfo> {
     logRequest(
       headers['x-user-id'],
@@ -61,7 +70,7 @@ export class BalancesController {
   }
 
   @Post()
-  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @UsePipes(new ZodValidationPipe(createBalanceSchema))
   createBalance(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
@@ -74,17 +83,6 @@ export class BalancesController {
       BalancesController.name,
     );
 
-    if (c.COINS_SYMBOL_MAP[createBalanceDto.coin] !== createBalanceDto.symbol) {
-      this.logger.error(
-        'The symbol does not match the expected symbol for the coin',
-        this.createBalance.name,
-      );
-      throw new SymbolCoinMismatchException(
-        createBalanceDto.coin,
-        createBalanceDto.symbol,
-      );
-    }
-
     return this.balancesService.createBalance(
       headers['x-user-id'],
       createBalanceDto,
@@ -95,7 +93,8 @@ export class BalancesController {
   getTotalBalances(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('currency') currency: string,
+    @Param('currency', new ZodValidationPipe(generateCurrencyEnum()))
+    currency: string,
   ) {
     logRequest(
       headers['x-user-id'],
@@ -111,10 +110,11 @@ export class BalancesController {
   }
 
   @Patch('/rebalance')
+  @UsePipes(new ZodValidationPipe(coinsPercentagesSchema))
   rebalance(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Body() coins_precentages: Record<Coin, number>,
+    @Body() coins_precentages: CoinsPercentagesDto,
   ) {
     logRequest(
       headers['x-user-id'],
@@ -130,11 +130,11 @@ export class BalancesController {
   }
 
   @Patch(':coin/add')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @UsePipes(new ZodValidationPipe(updateBalanceSchema))
   addBalanceToCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin') coin: Coin,
+    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
     logRequest(
@@ -152,11 +152,11 @@ export class BalancesController {
   }
 
   @Patch(':coin/substract')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @UsePipes(new ZodValidationPipe(updateBalanceSchema))
   substractBalanceFromCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin') coin: Coin,
+    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
     logRequest(
@@ -174,11 +174,11 @@ export class BalancesController {
   }
 
   @Patch(':coin/set')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @UsePipes(new ZodValidationPipe(updateBalanceSchema))
   setBalanceToCoin(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin') coin: Coin,
+    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ) {
     logRequest(
@@ -199,7 +199,7 @@ export class BalancesController {
   deleteBalance(
     @Ip() ip: string,
     @Headers() headers: BalacesApiHeader,
-    @Param('coin') coin: Coin,
+    @Param('coin', new ZodValidationPipe(CoinEnum)) coin: Coin,
   ) {
     logRequest(
       headers['x-user-id'],

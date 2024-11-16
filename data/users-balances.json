@@ -4,25 +4,19 @@
       "id": "12345",
       "name": "jonny",
       "balances": [
-        { "coin": "tether", "symbol": "dcy2", "amount": 1 },
-        { "coin": "ethereum", "symbol": "dcy3", "amount": 1 },
-        { "coin": "bitcoin", "symbol": "dcy3", "amount": 1 }
+        { "coin": "tether", "symbol": "usdt", "amount": 5927467.532467533 },
+        { "coin": "ethereum", "symbol": "eth", "amount": 1148.2360568177419 },
+        { "coin": "bitcoin", "symbol": "btc", "amount": 26 }
       ]
     },
-    { "id": "123456", "name": "jonny", "balances": [] },
-    { "id": "1234564", "name": "jonny", "balances": [] },
     {
-      "id": "12345642",
-      "name": "jonny",
+      "id": "123",
+      "name": "David",
       "balances": [
-        { "coin": "biWtcoin", "currency": "sds", "amount": 100 },
-        { "coin": "biWytcoin", "currency": "sdse", "amount": 100 },
-        { "coin": "biWytcoien", "currency": "sdese", "amount": 100 },
-        { "coin": "EEE", "currency": "SDES", "amount": 100 },
-        { "coin": "EEEE", "currency": "SDS", "amount": 100 },
-        { "coin": "etherium", "currency": "THC", "amount": 100 },
-        { "coin": "etheriddm", "currency": "THC", "amount": 100 },
-        { "coin": "etherdddiddm", "currency": "THC", "amount": 100 }
+        { "coin": "binancecoin", "symbol": "bnb", "amount": 49 },
+        { "coin": "ethereum", "symbol": "eth", "amount": 294.41950174813894 },
+        { "coin": "bitcoin", "symbol": "btc", "amount": 43 },
+        { "coin": "ripple", "symbol": "xrp", "amount": 234 }
       ]
     }
   ]

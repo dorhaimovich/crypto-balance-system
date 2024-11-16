@@ -35,8 +35,8 @@ $ npm install
 ```
 
 3. Add .env file to root folder
-
-### Compile and run the project
+   
+4. Compile and run the project
 
 ```bash
 # development

@@ -10,6 +10,7 @@ import { CoinInfo } from 'src/shared/interfaces';
 import { Coin } from 'src/shared/schemas/coin.schema';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { Currency } from 'src/shared/schemas/currency.schema';
 
 @Injectable()
 export class RatesService {
@@ -38,16 +39,15 @@ export class RatesService {
         );
 
         if (value) {
-          console.log('value out from cache');
           rates[coinId] = value;
         } else {
-          const rate = await this.databaseService.getData(
+          const currencyRate = await this.databaseService.getData<number>(
             DataBaseFiles.RATES,
             `/${coinId}/${currency.toLowerCase()}`,
           );
 
-          rates[coinId] = rate;
-          await this.cacheManager.set(`${coinId}-${currency}`, rate);
+          rates[coinId] = currencyRate;
+          await this.cacheManager.set(`${coinId}-${currency}`, currencyRate);
         }
       } catch (error) {
         this.logger.error(error, this.getRates.name);
@@ -71,7 +71,7 @@ export class RatesService {
         }),
       );
 
-      this.databaseService.setData(
+      this.databaseService.setData<string[]>(
         DataBaseFiles.VS_CURRENCIES,
         '/currencies',
         data,
@@ -86,23 +86,22 @@ export class RatesService {
     }
   }
 
-  // clean that method
   @Cron(CronExpression.EVERY_DAY_AT_4AM)
   private async updateRates(): Promise<void> {
     const endpoint = `${this.baseURl}simple/price`;
 
-    const coins: CoinInfo[] = await this.databaseService.getData(
+    const coins = await this.databaseService.getData<CoinInfo[]>(
       DataBaseFiles.COINS,
       '/coins',
     );
-    const currs = await this.databaseService.getData(
+    const currs = await this.databaseService.getData<Currency[]>(
       DataBaseFiles.VS_CURRENCIES,
       '/currencies',
     );
 
     try {
       const { data } = await firstValueFrom(
-        this.httpService.get<Map<string, Map<string, number>>>(endpoint, {
+        this.httpService.get<Map<Coin, Map<Currency, number>>>(endpoint, {
           params: {
             ids: coins.map((x) => x.id).join(','),
             vs_currencies: currs.join(','),
@@ -116,7 +115,11 @@ export class RatesService {
       );
 
       this.cacheManager.reset();
-      this.databaseService.setData(DataBaseFiles.RATES, 'rates', data);
+      this.databaseService.setData<Map<Coin, Map<Currency, number>>>(
+        DataBaseFiles.RATES,
+        'rates',
+        data,
+      );
     } catch (error) {
       this.logger.error(error.response.data, this.updateRates.name);
     } finally {

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const CoinEnum = z.enum([
+export const CoinSchema = z.enum([
   'tether',
   'ethereum',
   'bitcoin',
@@ -13,4 +13,4 @@ export const CoinEnum = z.enum([
   'polkadot',
 ]);
 
-export type Coin = z.infer<typeof CoinEnum>;
+export type Coin = z.infer<typeof CoinSchema>;

@@ -4,16 +4,16 @@
       "id": "12345",
       "name": "jonny",
       "balances": [
-        { "coin": "tether", "symbol": "usdt", "amount": 5927467.532467533 },
-        { "coin": "ethereum", "symbol": "eth", "amount": 1148.2360568177419 },
-        { "coin": "bitcoin", "symbol": "btc", "amount": 26 }
+        { "coin": "tether", "symbol": "usdt", "amount": 13 },
+        { "coin": "ethereum", "symbol": "eth", "amount": 1530.982700519926 },
+        { "coin": "bitcoin", "symbol": "btc", "amount": 26.000021931794528 },
+        { "coin": "ripple", "symbol": "xrp", "amount": 100 }
       ]
     },
     {
       "id": "123",
       "name": "David",
       "balances": [
-        { "coin": "binancecoin", "symbol": "bnb", "amount": 49 },
         { "coin": "ethereum", "symbol": "eth", "amount": 294.41950174813894 },
         { "coin": "bitcoin", "symbol": "btc", "amount": 43 },
         { "coin": "ripple", "symbol": "xrp", "amount": 234 }

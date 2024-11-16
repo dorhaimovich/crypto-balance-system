@@ -47,3 +47,12 @@ $ npm run start
 $ npm run start:dev
 
 ```
+
+## Brief Approach Explanation
+
+This service is designed to manage user cryptocurrency balances efficiently. It follows a modular approach using **NestJS**, emphasizing clean code structure and extensibility. Key features include:
+
+- **Daily Currency and Rates Synchronization**: Supported currencies and coin rates are fetched daily from an external API, ensuring up-to-date information and flexibility in handling various cryptocurrencies.
+- **Validation with Zod**: Data validation is implemented using `Zod` schemas, ensuring API inputs are accurate and consistent.  
+- **Error Handling**: Custom exceptions and a global exception filter provide clear error messages and centralized error management.  
+- **Logging**: Detailed logs for each API call and critical operations facilitate monitoring and debugging.  

@@ -1,12 +1,12 @@
 
 ## Project Overview
 
-The Balances Management Service is a NestJS-based backend system designed to manage user balances, particularly in cryptocurrencies. It provides functionalities to:
+The Crypto Balances Management System is a NestJS-based backend system designed to manage user balances, particularly in cryptocurrencies. It provides functionalities to:
 
-Retrieve individual or total balances in various currencies.
-Add or update balances.
-Rebalance portfolios with customizable target percentages.
-Validate user inputs and handle exceptions gracefully.
+* Retrieve individual or total balances in various currencies.
+* Add or update balances.
+* Rebalance portfolios with customizable target percentages.
+
 This service integrates with a database system (node-json-db) and external APIs for real-time exchange rates, ensuring accurate balance calculations.
 
 ## Project setup

@@ -1,4 +1,4 @@
-import { Coin } from './types';
+import { Coin } from './schemas/coin.schema';
 
 export interface BalanceInfo {
   coin: Coin;
@@ -14,4 +14,12 @@ export interface CoinInfo {
 
 export interface BalacesApiHeader {
   'x-user-id': string;
+}
+
+export interface ExceptionsResponseObject {
+  statusCode: number;
+  timestamp: string;
+  path: string;
+  method: string;
+  response: string | object;
 }

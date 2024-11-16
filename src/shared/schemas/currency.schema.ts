@@ -18,5 +18,5 @@ export const generateCurrencyEnum = (): z.ZodEnum<[string, ...string[]]> => {
   return z.enum(getCoinsFromJson());
 };
 
-export const CurrencyEnum = generateCurrencyEnum();
-export type Currency = z.infer<typeof CurrencyEnum>;
+export const CurrencySchema = generateCurrencyEnum();
+export type Currency = z.infer<typeof CurrencySchema>;

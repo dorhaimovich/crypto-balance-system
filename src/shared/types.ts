@@ -9,3 +9,11 @@ export type Coin =
   | 'binance-usd'
   | 'solana'
   | 'polkadot';
+
+export type ExceptionsResponseObject = {
+  statusCode: number;
+  timestamp: string;
+  path: string;
+  method: string;
+  response: string | object;
+};

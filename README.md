@@ -21,17 +21,27 @@ Ensure the following are installed on your system:
 
 ### Installation
 
-Clone the repository:
+1. Clone the repository:
 
 ```bash
-git clone https:/
-cd 
+git clone https://github.com/dorhaimovich/crypto-balance-system.git
+cd crypto-balance-system
 ```
 
-Install dependencies:
+2. Install dependencies:
 
 ```bash
 $ npm install
+```
+
+3. Add .env file to root folder
+   
+4. Start the application:
+
+```bash
+$ npm run start
+or
+$ npm run start:dev
 ```
 
 ## Compile and run the project

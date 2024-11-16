@@ -1,0 +1,14 @@
+{
+  "coins": [
+    { "id": "tether", "symbol": "usdt", "name": "Tether" },
+    { "id": "ethereum", "symbol": "eth", "name": "Ethereum" },
+    { "id": "bitcoin", "symbol": "btc", "name": "Bitcoin" },
+    { "id": "binancecoin", "symbol": "bnb", "name": "BNB" },
+    { "id": "usd-coin", "symbol": "usdc", "name": "USDC" },
+    { "id": "ripple", "symbol": "xrp", "name": "XRP" },
+    { "id": "cardano", "symbol": "ada", "name": "Cardano" },
+    { "id": "binance-usd", "symbol": "busd", "name": "BUSD" },
+    { "id": "solana", "symbol": "sol", "name": "Solana" },
+    { "id": "polkadot", "symbol": "dot", "name": "Polkadot" }
+  ]
+}

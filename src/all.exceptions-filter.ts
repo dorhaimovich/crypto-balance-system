@@ -7,13 +7,7 @@ import {
 import { BaseExceptionFilter } from '@nestjs/core';
 import { Request, Response } from 'express';
 import { LoggerService } from './logger/logger.service';
-
-type ResponseObject = {
-  statusCode: number;
-  timestamp: string;
-  path: string;
-  response: string | object;
-};
+import { ExceptionsResponseObject } from './shared/types';
 
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
@@ -24,10 +18,11 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const responseObject: ResponseObject = {
+    const responseObject: ExceptionsResponseObject = {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       timestamp: new Date().toISOString(),
       path: request.url,
+      method: request.method,
       response: 'Internal Server Error',
     };
 

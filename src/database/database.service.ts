@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Config, JsonDB } from 'node-json-db';
 import * as path from 'path';
 import * as fs from 'fs';
 import { LoggerService } from 'src/logger/logger.service';
+import { DataBaseException } from 'src/shared/exceptions/databse.exceptions';
+import { getDirPath } from 'src/shared/utils';
 @Injectable()
 export class DatabaseService {
   private readonly logger = new LoggerService(DatabaseService.name);
@@ -14,23 +16,17 @@ export class DatabaseService {
     }
 
     try {
-      const dataDir = path.resolve(process.cwd(), 'data');
-      if (!fs.existsSync(dataDir)) {
-        await fs.promises.mkdir(dataDir);
-      }
-
+      const dataDir = await getDirPath('data');
       const db = new JsonDB(
         new Config(path.join(dataDir, filename), true, false, '/'),
       );
-
       this.dbInstances.set(filename, db);
-      return db;
-    } catch (err) {
-      this.logger.log(err, this.getDbInstance.name);
-      // Throw error while connecting to db
-    }
 
-    return this.dbInstances.get(filename);
+      return db;
+    } catch (error) {
+      this.logger.log(error, this.getDbInstance.name);
+      throw new DataBaseException(error.message);
+    }
   }
 
   async getData(filename: string, path: string) {
@@ -40,7 +36,7 @@ export class DatabaseService {
       return data;
     } catch (error) {
       this.logger.error(error, this.getData.name);
-      return null;
+      throw new DataBaseException(error.message);
     }
   }
 
@@ -57,7 +53,7 @@ export class DatabaseService {
       return index;
     } catch (error) {
       this.logger.error(error, this.getArrayIndex.name);
-      return null;
+      throw new DataBaseException(error.message);
     }
   }
 
@@ -72,7 +68,7 @@ export class DatabaseService {
       return data;
     } catch (error) {
       this.logger.error(error, this.setData.name);
-      return null;
+      throw new DataBaseException(error.message);
     }
   }
 
@@ -84,7 +80,7 @@ export class DatabaseService {
       return data;
     } catch (error) {
       this.logger.error(error, this.removeData.name);
-      return null;
+      throw new DataBaseException(error.message);
     }
   }
 }

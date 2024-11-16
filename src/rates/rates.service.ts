@@ -49,8 +49,8 @@ export class RatesService {
           rates[coinId] = rate;
           await this.cacheManager.set(`${coinId}-${currency}`, rate);
         }
-      } catch (err) {
-        this.logger.error(err, this.getRates.name);
+      } catch (error) {
+        this.logger.error(error, this.getRates.name);
       }
     }
 
@@ -76,8 +76,11 @@ export class RatesService {
         '/currencies',
         data,
       );
-    } catch (err) {
-      this.logger.error(err.response.data, this.updateSupportedCurrencies.name);
+    } catch (error) {
+      this.logger.error(
+        error.response.data,
+        this.updateSupportedCurrencies.name,
+      );
     } finally {
       this.logger.log('Job Done', this.updateSupportedCurrencies.name);
     }
@@ -114,8 +117,8 @@ export class RatesService {
 
       this.cacheManager.reset();
       this.databaseService.setData(DataBaseFiles.RATES, 'rates', data);
-    } catch (err) {
-      this.logger.error(err.response.data, this.updateRates.name);
+    } catch (error) {
+      this.logger.error(error.response.data, this.updateRates.name);
     } finally {
       this.logger.log('Job Done', this.updateRates.name);
     }

@@ -1,9 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Config, JsonDB } from 'node-json-db';
 import * as path from 'path';
-import * as fs from 'fs';
 import { LoggerService } from 'src/logger/logger.service';
-import { DataBaseException } from 'src/shared/exceptions/databse.exceptions';
+import { DataBaseException } from 'src/shared/exceptions/database.exceptions';
 import { getDirPath } from 'src/shared/utils';
 @Injectable()
 export class DatabaseService {

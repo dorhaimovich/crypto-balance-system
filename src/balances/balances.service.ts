@@ -1,20 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateBalanceDto } from './dto/create-balance.dto';
+import { CreateBalanceDto } from './schema/create-balance.schema';
 import { DatabaseService } from './../database/database.service';
-import { UpdateBalanceDto } from './dto/update-balance.dto';
+import { UpdateBalanceDto } from './schema/update-balance.schema';
 import {
   CoinAlreadyExistException,
+  CoinNotFoundException,
   InsufficientBalanceException,
-  InvalidTargetPercentageException,
-  UnsupportedCoinsException,
   UserNotFoundException,
 } from 'src/shared/exceptions/http.exceptions';
 import { DataBaseFiles } from 'src/shared/db-files';
 import { RatesService } from 'src/rates/rates.service';
 import { BalanceInfo } from 'src/shared/interfaces';
-import { Coin } from 'src/shared/types';
 import { LoggerService } from 'src/logger/logger.service';
-import { Constants as c } from 'src/shared/constants';
+import { CoinsPercentagesDto } from './schema/rebalance.schema';
 
 @Injectable()
 export class BalancesService {
@@ -61,7 +59,7 @@ export class BalancesService {
       'coin',
     );
     if (balanceIndex == null) {
-      throw new UserNotFoundException(coin); // change to coin type not found
+      throw new CoinNotFoundException(coin);
     }
     return balanceIndex;
   }
@@ -108,28 +106,8 @@ export class BalancesService {
   // clean that method
   async rebalance(
     id: string,
-    targetPercentages: Record<Coin, number>,
+    targetPercentages: CoinsPercentagesDto,
   ): Promise<void> {
-    const unSupportedCoins = Object.keys(targetPercentages).filter(
-      (key) => !c.COINS_LIST.includes(key as Coin),
-    );
-    if (unSupportedCoins.length > 0) {
-      throw new UnsupportedCoinsException(unSupportedCoins);
-    }
-
-    if (
-      Object.values(targetPercentages).reduce(
-        (sum, percentage) => sum + percentage,
-        0,
-      ) !== 100
-    ) {
-      this.logger.error(
-        'Invalid target percentages. The total must be exactly 100.',
-        this.rebalance.name,
-      );
-      throw new InvalidTargetPercentageException();
-    }
-
     const userIndex = await this.getUserIndex(id);
 
     const balances: BalanceInfo[] = await this.DatabaseService.getData(
@@ -146,7 +124,7 @@ export class BalancesService {
     }, 0);
 
     for (const balance of balances) {
-      const updateBalance = new UpdateBalanceDto();
+      const updateBalance: UpdateBalanceDto = {};
       updateBalance.amount =
         (total * (targetPercentages[balance.coin] / 100)) / rates[balance.coin];
 

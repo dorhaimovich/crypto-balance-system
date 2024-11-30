@@ -9,10 +9,10 @@ import { Cache } from 'cache-manager';
 
 import { DatabaseService } from '@app/shared/database/database.service';
 import { LoggerService } from '@app/shared/logger/logger.service';
-import { Coin } from '@app/shared/schemas/coin.schema';
+import { Coin } from '@app/shared/types/coin.schema';
 import { DataBaseFiles } from '@app/shared/db-files';
 import { CoinInfo } from '@app/shared';
-import { Currency } from '@app/shared/schemas/currency.schema';
+import { Currency } from '@app/shared/types/currency.type';
 
 @Injectable()
 export class RateServiceService {

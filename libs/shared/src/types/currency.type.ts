@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -14,9 +12,9 @@ const getCoinsFromJson = (): [string] => {
   return parsedData.currencies;
 };
 
-export const generateCurrencyEnum = (): z.ZodEnum<[string, ...string[]]> => {
-  return z.enum(getCoinsFromJson());
+export const generateCurrencyEnum = (): string[] => {
+  return getCoinsFromJson();
 };
 
-export const CurrencySchema = generateCurrencyEnum();
-export type Currency = z.infer<typeof CurrencySchema>;
+const supportedCurrencies = generateCurrencyEnum();
+export type Currency = (typeof supportedCurrencies)[number];

@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Config, JsonDB } from 'node-json-db';
 import * as path from 'path';
 import { LoggerService } from '../logger/logger.service';
-import { getDirPath } from '../utils';
+import { getDirPath, formatName } from '../utils';
 import { DataBaseException } from '../exceptions/database.exceptions';
 
 @Injectable()
 export class DatabaseService {
-  private readonly logger = new LoggerService(DatabaseService.name);
   private dbInstances: Map<string, JsonDB> = new Map();
+
+  constructor(private readonly loggerService: LoggerService) {}
 
   private async getDbInstance(filename: string): Promise<JsonDB> {
     if (this.dbInstances.has(filename)) {
@@ -24,7 +25,10 @@ export class DatabaseService {
 
       return db;
     } catch (error) {
-      this.logger.log(error, this.getDbInstance.name);
+      this.loggerService.log(
+        error,
+        formatName(DatabaseService.name, this.getDbInstance.name),
+      );
       throw new DataBaseException(error.message);
     }
   }
@@ -35,7 +39,10 @@ export class DatabaseService {
       const data: T = await db.getData(path);
       return data;
     } catch (error) {
-      this.logger.error(error, this.getData.name);
+      this.loggerService.error(
+        error,
+        formatName(DatabaseService.name, this.getData.name),
+      );
       throw new DataBaseException(error.message);
     }
   }
@@ -52,7 +59,10 @@ export class DatabaseService {
       if (index == -1) return null;
       return index;
     } catch (error) {
-      this.logger.error(error, this.getArrayIndex.name);
+      this.loggerService.error(
+        error,
+        formatName(DatabaseService.name, this.getArrayIndex.name),
+      );
       throw new DataBaseException(error.message);
     }
   }
@@ -63,7 +73,10 @@ export class DatabaseService {
       db.push(path, data);
       return data;
     } catch (error) {
-      this.logger.error(error, this.setData.name);
+      this.loggerService.error(
+        error,
+        formatName(DatabaseService.name, this.setData.name),
+      );
       throw new DataBaseException(error.message);
     }
   }
@@ -75,7 +88,10 @@ export class DatabaseService {
       await db.delete(path);
       return data;
     } catch (error) {
-      this.logger.error(error, this.removeData.name);
+      this.loggerService.error(
+        error,
+        formatName(DatabaseService.name, this.removeData.name),
+      );
       throw new DataBaseException(error.message);
     }
   }

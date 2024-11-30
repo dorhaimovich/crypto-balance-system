@@ -1,10 +1,10 @@
-import { ConsoleLogger, Injectable } from '@nestjs/common';
+import { Logger, Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getDirPath, getFormattedTimeStamp } from '../utils';
 
 @Injectable()
-export class LoggerService extends ConsoleLogger {
+export class LoggerService extends Logger {
   private async logToFile(
     fileName: string,
     logType: string,
@@ -26,13 +26,13 @@ export class LoggerService extends ConsoleLogger {
 
   log(message: any, context: string): void {
     const fileName = 'logs.log';
-    this.logToFile(fileName, 'log', message, `${this.context}.${context}`);
+    this.logToFile(fileName, 'log', message, context);
     super.log(message, context);
   }
 
   error(message: string | object, context: string): void {
     const fileName = 'errors.log';
-    this.logToFile(fileName, 'error', message, `${this.context}.${context}`);
+    this.logToFile(fileName, 'error', message, context);
     super.error(message, context);
   }
 }

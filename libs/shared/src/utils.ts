@@ -1,6 +1,12 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { LoggerService } from './logger/logger.service';
+import { LoggerService } from '@nestjs/common';
+
+export { formatName, getDirPath, getFormattedTimeStamp, logRequest };
+
+const formatName = (className: string, methodName: string) => {
+  return `${className}.${methodName}`;
+};
 
 const getDirPath = async (dirPath: string): Promise<string> => {
   const dataDir = path.resolve(process.cwd(), dirPath);
@@ -19,17 +25,13 @@ const getFormattedTimeStamp = () => {
 };
 
 const logRequest = (
+  logger: LoggerService,
   user: string,
   ip: string,
-  methodName: string,
-  serviceName: string,
+  name: string,
 ): void => {
-  const logger = new LoggerService(serviceName);
-
   logger.log(
     `User '${user}' made an API request from IP address '${ip}'`,
-    methodName,
+    name,
   );
 };
-
-export { getDirPath, getFormattedTimeStamp, logRequest };

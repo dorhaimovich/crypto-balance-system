@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBalanceDto } from './schema/create-balance.schema';
+import { CreateBalanceDto } from './dto/create-balance.dto';
 import { DatabaseService } from '@app/shared/database/database.service';
-import { User } from '@app/shared/schemas/user.schema';
 import { DataBaseFiles } from '@app/shared/db-files';
 import {
   CoinAlreadyExistException,
@@ -9,16 +8,19 @@ import {
   InsufficientBalanceException,
   UserNotFoundException,
 } from '@app/shared/exceptions/http.exceptions';
-import { UpdateBalanceDto } from './schema/update-balance.schema';
-import { BalanceInfo } from '@app/shared';
+import { BalanceInfo, User } from '@app/shared';
+import { RebalanceDto } from './dto/rebalance.dto';
+import { UpdateBalanceDto } from './dto/update-balance.dto';
 
 @Injectable()
 export class BalanceServiceService {
   constructor(
     private readonly DatabaseService: DatabaseService,
     // private readonly ratesService: RatesService,
-  ) {
-    this.initDB();
+  ) {}
+
+  async onModuleInit() {
+    await this.initDB();
   }
 
   private async initDB(): Promise<void> {
@@ -104,36 +106,36 @@ export class BalanceServiceService {
   //   return { [currency]: total };
   // }
 
-  // // clean that method
-  // async rebalance(
-  //   id: string,
-  //   targetPercentages: CoinsPercentagesDto,
-  // ): Promise<BalanceInfo[]> {
-  //   const userIndex = await this.getUserIndex(id);
+  // clean that method
+  async rebalance(
+    id: string,
+    targetPercentages: RebalanceDto,
+  ): Promise<BalanceInfo[]> {
+    const userIndex = await this.getUserIndex(id);
 
-  //   const balances = await this.DatabaseService.getData<BalanceInfo[]>(
-  //     DataBaseFiles.USERS_BALANCES,
-  //     `/users[${userIndex}]/balances`,
-  //   );
-  //   const rates = await this.ratesService.getRates(
-  //     'usd',
-  //     balances.map((balance) => balance.coin),
-  //   );
+    const balances = await this.DatabaseService.getData<BalanceInfo[]>(
+      DataBaseFiles.USERS_BALANCES,
+      `/users[${userIndex}]/balances`,
+    );
+    // const rates = await this.ratesService.getRates(
+    //   'usd',
+    //   balances.map((balance) => balance.coin),
+    // );
 
-  //   const total = balances.reduce((sum, balance) => {
-  //     return sum + rates[balance.coin] * balance.amount;
-  //   }, 0);
+    // const total = balances.reduce((sum, balance) => {
+    //   return sum + rates[balance.coin] * balance.amount;
+    // }, 0);
 
-  //   for (const balance of balances) {
-  //     const updateBalance: UpdateBalanceDto = {};
-  //     updateBalance.amount =
-  //       (total * (targetPercentages[balance.coin] / 100)) / rates[balance.coin];
+    // for (const balance of balances) {
+    //   const updateBalance: UpdateBalanceDto = {};
+    //   updateBalance.amount =
+    //     (total * (targetPercentages[balance.coin] / 100)) / rates[balance.coin];
 
-  //     await this.setBalance(id, balance.coin, updateBalance);
-  //   }
+    //   await this.setBalance(id, balance.coin, updateBalance);
+    // }
 
-  //   return await this.getAllBalances(id);
-  // }
+    return await this.getAllBalances(id);
+  }
 
   async createBalance(
     id: string,
@@ -161,58 +163,52 @@ export class BalanceServiceService {
     id: string,
     coin: string,
     updateBalanceDto: UpdateBalanceDto,
-  ): Promise<number> {
+  ): Promise<BalanceInfo> {
     const userIndex = await this.getUserIndex(id);
     const balanceIndex = await this.getBalanceIndex(userIndex, coin);
 
-    const amount = await this.DatabaseService.getData<number>(
+    const balance = await this.DatabaseService.getData<BalanceInfo>(
       DataBaseFiles.USERS_BALANCES,
-      `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
+      `/users[${userIndex}]/balances[${balanceIndex}]`,
     );
 
-    return await this.DatabaseService.setData<number>(
+    balance.amount += updateBalanceDto.amount;
+
+    await this.DatabaseService.setData<number>(
       DataBaseFiles.USERS_BALANCES,
       `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
-      amount + updateBalanceDto.amount,
+      balance.amount,
     );
+
+    return balance;
   }
 
   async substractBalance(
     id: string,
     coin: string,
     updateBalanceDto: UpdateBalanceDto,
-  ): Promise<number> {
+  ): Promise<BalanceInfo> {
     const userIndex = await this.getUserIndex(id);
     const balanceIndex = await this.getBalanceIndex(userIndex, coin);
 
-    const amount = await this.DatabaseService.getData<number>(
+    const balance = await this.DatabaseService.getData<BalanceInfo>(
       DataBaseFiles.USERS_BALANCES,
-      `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
+      `/users[${userIndex}]/balances[${balanceIndex}]`,
     );
 
-    if (amount < updateBalanceDto.amount) {
+    if (balance.amount < updateBalanceDto.amount) {
       throw new InsufficientBalanceException(coin);
     }
-    return await this.DatabaseService.setData<number>(
+
+    balance.amount -= updateBalanceDto.amount;
+
+    await this.DatabaseService.setData<number>(
       DataBaseFiles.USERS_BALANCES,
       `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
-      amount - updateBalanceDto.amount,
+      balance.amount,
     );
-  }
 
-  async setBalance(
-    id: string,
-    coin: string,
-    updateBalanceDto: UpdateBalanceDto,
-  ): Promise<number> {
-    const userIndex = await this.getUserIndex(id);
-    const balanceIndex = await this.getBalanceIndex(userIndex, coin);
-
-    return await this.DatabaseService.setData<number>(
-      DataBaseFiles.USERS_BALANCES,
-      `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
-      updateBalanceDto.amount,
-    );
+    return balance;
   }
 
   async deleteBalance(id: string, coin: string): Promise<BalanceInfo> {

@@ -1,5 +1,7 @@
+import { Coin } from '../types/coin.type';
+
 export interface CoinInfo {
-  id: string;
-  symbol: string;
+  id: Coin;
+  symbol?: string;
   name: string;
 }

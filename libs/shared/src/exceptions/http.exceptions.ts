@@ -69,12 +69,6 @@ class UnsupportedCoinsException extends HttpException {
   }
 }
 
-class ValidationFailedException extends HttpException {
-  constructor(error: unknown) {
-    super(`Zod validation exception: ${error}`, HttpStatus.BAD_REQUEST);
-  }
-}
-
 export {
   NoUserIdException,
   UserNotFoundException,
@@ -84,5 +78,4 @@ export {
   SymbolCoinMismatchException,
   InvalidTargetPercentageException,
   UnsupportedCoinsException,
-  ValidationFailedException,
 };

@@ -11,7 +11,7 @@ import { ExceptionsResponseObject } from './interfaces';
 
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
-  private readonly logger = new LoggerService(AllExceptionsFilter.name);
+  private readonly logger = new LoggerService();
 
   catch(exception: any, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();

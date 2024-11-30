@@ -9,77 +9,76 @@ import {
   UsePipes,
   Delete,
   Ip,
+  ValidationPipe,
 } from '@nestjs/common';
 
-import {
-  UpdateBalanceDto,
-  updateBalanceSchema,
-} from './schema/update-balance.schema';
 import { BalanceServiceService } from './balance-service.service';
-import {
-  CreateBalanceDto,
-  createBalanceSchema,
-} from './schema/create-balance.schema';
+import { CreateBalanceDto } from './dto/create-balance.dto';
 
-import { logRequest } from '@app/shared/utils';
-import { ZodValidationPipe } from '@app/shared/pipes/zod-validation.pipe';
-import { Coin, CoinSchema } from '@app/shared/schemas/coin.schema';
-import { ApiHeader, BalanceInfo, RequireUserId } from '@app/shared';
+import { formatName, logRequest } from '@app/shared/utils';
+import { BalanceInfo, UserId } from '@app/shared';
+import { CoinParam } from './params/coin.param';
+import { RebalanceDto } from './dto/rebalance.dto';
+import { LoggerService } from '@app/shared/logger/logger.service';
+import { UpdateBalanceDto } from './dto/update-balance.dto';
 
 @Controller('balances')
-@RequireUserId()
 export class BalanceServiceController {
-  constructor(private readonly balanceServiceService: BalanceServiceService) {}
+  constructor(
+    private readonly balanceServiceService: BalanceServiceService,
+    private readonly loggerService: LoggerService,
+  ) {}
 
   @Get()
   getAllBalances(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
+    @UserId() userId: string,
   ): Promise<BalanceInfo[]> {
     logRequest(
-      headers['x-user-id'],
+      this.loggerService,
+      userId,
       ip,
-      this.getAllBalances.name,
-      BalanceServiceController.name,
+      formatName(BalanceServiceController.name, this.getAllBalances.name),
     );
 
-    return this.balanceServiceService.getAllBalances(headers['x-user-id']);
+    return this.balanceServiceService.getAllBalances(userId);
   }
 
   @Get(':coin')
+  @UsePipes(new ValidationPipe())
   getOneBalance(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
-    @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
+    @UserId() userId: string,
+    @Param() { coin }: CoinParam,
   ): Promise<BalanceInfo> {
     logRequest(
-      headers['x-user-id'],
+      this.loggerService,
+      userId,
       ip,
-      this.getOneBalance.name,
-      BalanceServiceController.name,
+      formatName(BalanceServiceController.name, this.getOneBalance.name),
     );
-
-    return this.balanceServiceService.getOneBalance(headers['x-user-id'], coin);
+    console.log(coin);
+    return this.balanceServiceService.getOneBalance(userId, coin);
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(createBalanceSchema))
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  )
   createBalance(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
+    @UserId() userId: string,
     @Body() createBalanceDto: CreateBalanceDto,
   ): Promise<CreateBalanceDto> {
     logRequest(
-      headers['x-user-id'],
+      this.loggerService,
+      userId,
       ip,
-      this.createBalance.name,
-      BalanceServiceController.name,
+      formatName(BalanceServiceController.name, this.createBalance.name),
     );
-
-    return this.balanceServiceService.createBalance(
-      headers['x-user-id'],
-      createBalanceDto,
-    );
+    return this.balanceServiceService.createBalance(userId, createBalanceDto);
   }
 
   // @Get('currency/:currency')
@@ -90,117 +89,96 @@ export class BalanceServiceController {
   //   currency: string,
   // ): Promise<Record<string, number>> {
   //   logRequest(
-  //     headers['x-user-id'],
+  //     userId,
   //     ip,
   //     this.getTotalBalances.name,
   //     BalanceServiceController.name,
   //   );
 
   //   return this.balanceServiceService.getTotalBalances(
-  //     headers['x-user-id'],
+  //     userId,
   //     currency,
   //   );
   // }
 
-  // @Patch('/rebalance')
-  // @UsePipes(new ZodValidationPipe(coinsPercentagesSchema))
-  // rebalance(
-  //   @Ip() ip: string,
-  //   @Headers() headers: BalacesApiHeader,
-  //   @Body() coins_precentages: CoinsPercentagesDto,
-  // ): Promise<BalanceInfo[]> {
-  //   logRequest(
-  //     headers['x-user-id'],
-  //     ip,
-  //     this.rebalance.name,
-  //     BalanceServiceController.name,
-  //   );
-
-  //   return this.balanceServiceService.rebalance(
-  //     headers['x-user-id'],
-  //     coins_precentages,
-  //   );
-  // }
-
-  @Patch(':coin/add')
-  addBalanceToCoin(
+  @Patch('/rebalance')
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  )
+  rebalance(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
-    @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
-    @Body(new ZodValidationPipe(updateBalanceSchema))
-    updateBalanceDto: UpdateBalanceDto,
-  ): Promise<number> {
+    @UserId() userId: string,
+    @Body() rebalanceDto: RebalanceDto,
+  ): Promise<BalanceInfo[]> {
     logRequest(
-      headers['x-user-id'],
+      this.loggerService,
+      userId,
       ip,
-      this.addBalanceToCoin.name,
-      BalanceServiceController.name,
+      formatName(BalanceServiceController.name, this.rebalance.name),
+    );
+
+    return this.balanceServiceService.rebalance(userId, rebalanceDto);
+  }
+
+  @Post(':coin')
+  @UsePipes(new ValidationPipe())
+  addBalance(
+    @Ip() ip: string,
+    @UserId() userId: string,
+    @Param() { coin }: CoinParam,
+    @Body() updateBalanceDto: UpdateBalanceDto,
+  ): Promise<BalanceInfo> {
+    logRequest(
+      this.loggerService,
+      userId,
+      ip,
+      formatName(BalanceServiceController.name, this.addBalance.name),
     );
 
     return this.balanceServiceService.addBalance(
-      headers['x-user-id'],
-      coin,
-      updateBalanceDto,
-    );
-  }
-
-  @Patch(':coin/substract')
-  substractBalanceFromCoin(
-    @Ip() ip: string,
-    @Headers() headers: ApiHeader,
-    @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
-    @Body(new ZodValidationPipe(updateBalanceSchema))
-    updateBalanceDto: UpdateBalanceDto,
-  ): Promise<number> {
-    logRequest(
-      headers['x-user-id'],
-      ip,
-      this.substractBalanceFromCoin.name,
-      BalanceServiceController.name,
-    );
-
-    return this.balanceServiceService.substractBalance(
-      headers['x-user-id'],
-      coin,
-      updateBalanceDto,
-    );
-  }
-
-  @Patch(':coin/set')
-  setBalanceToCoin(
-    @Ip() ip: string,
-    @Headers() headers: ApiHeader,
-    @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
-    @Body(new ZodValidationPipe(updateBalanceSchema))
-    updateBalanceDto: UpdateBalanceDto,
-  ): Promise<number> {
-    logRequest(
-      headers['x-user-id'],
-      ip,
-      this.setBalanceToCoin.name,
-      BalanceServiceController.name,
-    );
-
-    return this.balanceServiceService.setBalance(
-      headers['x-user-id'],
+      userId,
       coin,
       updateBalanceDto,
     );
   }
 
   @Delete(':coin')
-  deleteBalance(
+  subtractBalance(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
-    @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
+    @UserId() userId: string,
+    @Param() { coin }: CoinParam,
+    @Body() updateBalanceDto: UpdateBalanceDto,
   ): Promise<BalanceInfo> {
     logRequest(
-      headers['x-user-id'],
+      this.loggerService,
+      userId,
       ip,
-      this.deleteBalance.name,
-      BalanceServiceController.name,
+      formatName(BalanceServiceController.name, this.subtractBalance.name),
     );
 
-    return this.balanceServiceService.deleteBalance(headers['x-user-id'], coin);
+    return this.balanceServiceService.substractBalance(
+      userId,
+      coin,
+      updateBalanceDto,
+    );
+  }
+
+  @Delete(':coin')
+  @UsePipes(new ValidationPipe())
+  deleteBalance(
+    @Ip() ip: string,
+    @UserId() userId: string,
+    @Param() { coin }: CoinParam,
+  ): Promise<BalanceInfo> {
+    logRequest(
+      this.loggerService,
+      userId,
+      ip,
+      formatName(BalanceServiceController.name, this.deleteBalance.name),
+    );
+
+    return this.balanceServiceService.deleteBalance(userId, coin);
   }
 }

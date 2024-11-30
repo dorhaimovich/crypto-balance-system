@@ -9,20 +9,20 @@ import { Cache } from 'cache-manager';
 
 import { DatabaseService } from '@app/shared/database/database.service';
 import { LoggerService } from '@app/shared/logger/logger.service';
-import { Coin } from '@app/shared/schemas/coin.schema';
 import { DataBaseFiles } from '@app/shared/db-files';
-import { CoinInfo } from '@app/shared';
-import { Currency } from '@app/shared/schemas/currency.schema';
+import { Coin, CoinInfo } from '@app/shared';
+import { Currency } from '@app/shared/types/currency.type';
+import { formatName } from '@app/shared/utils';
 
 @Injectable()
 export class RateServiceService {
-  private readonly logger = new LoggerService(RateServiceService.name);
   private readonly baseURl: string;
 
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    private readonly loggerService: LoggerService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.baseURl = this.configService.get<string>('COINGECKO_API_URL');
@@ -52,7 +52,10 @@ export class RateServiceService {
           await this.cacheManager.set(`${coinId}-${currency}`, currencyRate);
         }
       } catch (error) {
-        this.logger.error(error, this.getRates.name);
+        this.loggerService.error(
+          error,
+          formatName(RateServiceService.name, this.getRates.name),
+        );
       }
     }
 
@@ -79,12 +82,21 @@ export class RateServiceService {
         data,
       );
     } catch (error) {
-      this.logger.error(
+      this.loggerService.error(
         error.response.data,
-        this.updateSupportedCurrencies.name,
+        formatName(
+          RateServiceService.name,
+          this.updateSupportedCurrencies.name,
+        ),
       );
     } finally {
-      this.logger.log('Job Done', this.updateSupportedCurrencies.name);
+      this.loggerService.log(
+        'Job Done',
+        formatName(
+          RateServiceService.name,
+          this.updateSupportedCurrencies.name,
+        ),
+      );
     }
   }
 
@@ -123,9 +135,15 @@ export class RateServiceService {
         data,
       );
     } catch (error) {
-      this.logger.error(error.response.data, this.updateRates.name);
+      this.loggerService.error(
+        error.response.data,
+        formatName(RateServiceService.name, this.updateRates.name),
+      );
     } finally {
-      this.logger.log('Job Done', this.updateRates.name);
+      this.loggerService.log(
+        'Job Done',
+        formatName(RateServiceService.name, this.updateRates.name),
+      );
     }
   }
 }

@@ -3,7 +3,12 @@ import { Config, JsonDB } from 'node-json-db';
 import * as path from 'path';
 import { LoggerService } from '../logger/logger.service';
 import { getDirPath, formatName } from '../utils';
-import { DataBaseException } from '../exceptions/database.exceptions';
+import {
+  DBInstanceCreationFailedException,
+  GetDataException,
+  RemoveDataException,
+  SetDataException,
+} from '../exceptions/database.exceptions';
 
 @Injectable()
 export class DatabaseService {
@@ -29,13 +34,14 @@ export class DatabaseService {
         error,
         formatName(DatabaseService.name, this.getDbInstance.name),
       );
-      throw new DataBaseException(error.message);
+      throw new DBInstanceCreationFailedException();
     }
   }
 
   async getData<T>(filename: string, path: string): Promise<T> {
+    const db = await this.getDbInstance(filename);
+
     try {
-      const db = await this.getDbInstance(filename);
       const data: T = await db.getData(path);
       return data;
     } catch (error) {
@@ -43,7 +49,7 @@ export class DatabaseService {
         error,
         formatName(DatabaseService.name, this.getData.name),
       );
-      throw new DataBaseException(error.message);
+      throw new GetDataException();
     }
   }
 
@@ -53,8 +59,9 @@ export class DatabaseService {
     value: any,
     key: string = 'id',
   ): Promise<number> {
+    const db = await this.getDbInstance(filename);
+
     try {
-      const db = await this.getDbInstance(filename);
       const index = await db.getIndex(path, value, key);
       if (index == -1) return null;
       return index;
@@ -63,13 +70,14 @@ export class DatabaseService {
         error,
         formatName(DatabaseService.name, this.getArrayIndex.name),
       );
-      throw new DataBaseException(error.message);
+      throw new GetDataException();
     }
   }
 
   async setData<T>(filename: string, path: string, data: T): Promise<T> {
+    const db = await this.getDbInstance(filename);
+
     try {
-      const db = await this.getDbInstance(filename);
       db.push(path, data);
       return data;
     } catch (error) {
@@ -77,13 +85,14 @@ export class DatabaseService {
         error,
         formatName(DatabaseService.name, this.setData.name),
       );
-      throw new DataBaseException(error.message);
+      throw new SetDataException();
     }
   }
 
   async removeData<T>(filename: string, path: string): Promise<T> {
+    const db = await this.getDbInstance(filename);
+
     try {
-      const db = await this.getDbInstance(filename);
       const data: T = await db.getData(path);
       await db.delete(path);
       return data;
@@ -92,7 +101,7 @@ export class DatabaseService {
         error,
         formatName(DatabaseService.name, this.removeData.name),
       );
-      throw new DataBaseException(error.message);
+      throw new RemoveDataException();
     }
   }
 }

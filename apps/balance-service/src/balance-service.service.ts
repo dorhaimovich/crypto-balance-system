@@ -17,8 +17,10 @@ export class BalanceServiceService {
   constructor(
     private readonly DatabaseService: DatabaseService,
     // private readonly ratesService: RatesService,
-  ) {
-    this.initDB();
+  ) {}
+
+  async onModuleInit() {
+    await this.initDB();
   }
 
   private async initDB(): Promise<void> {

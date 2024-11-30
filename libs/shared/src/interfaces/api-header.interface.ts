@@ -1,3 +1,3 @@
-export interface BalacesApiHeader {
+export interface ApiHeader {
   'x-user-id': string;
 }

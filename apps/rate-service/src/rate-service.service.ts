@@ -81,17 +81,17 @@ export class RateServiceService {
         '/currencies',
         data,
       );
-    } catch (error) {
-      this.loggerService.error(
-        error.response.data,
+
+      this.loggerService.log(
+        `${data.length} Currencies updated successfully`,
         formatName(
           RateServiceService.name,
           this.updateSupportedCurrencies.name,
         ),
       );
-    } finally {
-      this.loggerService.log(
-        'Job Done',
+    } catch (error) {
+      this.loggerService.error(
+        error.response.data,
         formatName(
           RateServiceService.name,
           this.updateSupportedCurrencies.name,
@@ -115,7 +115,7 @@ export class RateServiceService {
 
     try {
       const { data } = await firstValueFrom(
-        this.httpService.get<Map<Coin, Map<Currency, number>>>(endpoint, {
+        this.httpService.get<Record<Coin, Record<Currency, number>>>(endpoint, {
           params: {
             ids: coins.map((x) => x.id).join(','),
             vs_currencies: currs.join(','),
@@ -129,19 +129,20 @@ export class RateServiceService {
       );
 
       this.cacheManager.reset();
-      this.databaseService.setData<Map<Coin, Map<Currency, number>>>(
+
+      this.databaseService.setData<Record<Coin, Record<Currency, number>>>(
         DataBaseFiles.RATES,
         'rates',
         data,
       );
+
+      this.loggerService.log(
+        `${Object.keys(data).length} Coins updated successfully`,
+        formatName(RateServiceService.name, this.updateRates.name),
+      );
     } catch (error) {
       this.loggerService.error(
         error.response.data,
-        formatName(RateServiceService.name, this.updateRates.name),
-      );
-    } finally {
-      this.loggerService.log(
-        'Job Done',
         formatName(RateServiceService.name, this.updateRates.name),
       );
     }

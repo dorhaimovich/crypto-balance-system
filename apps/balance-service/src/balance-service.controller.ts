@@ -20,6 +20,7 @@ import { ApiHeader, BalanceInfo, RequireUserId } from '@app/shared';
 import { CoinParam } from './params/coin.param';
 import { RebalanceDto } from './dto/rebalance.dto';
 import { LoggerService } from '@app/shared/logger/logger.service';
+import { UpdateBalanceDto } from './dto/update-balance.dto';
 
 @Controller('balances')
 @RequireUserId()
@@ -128,71 +129,48 @@ export class BalanceServiceController {
     );
   }
 
-  // @Patch(':coin/add')
-  // addBalanceToCoin(
-  //   @Ip() ip: string,
-  //   @Headers() headers: ApiHeader,
-  //   @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
-  //   @Body(new ZodValidationPipe(updateBalanceSchema))
-  //   updateBalanceDto: UpdateBalanceDto,
-  // ): Promise<number> {
-  //   logRequest(
-  //     headers['x-user-id'],
-  //     ip,
-  //     this.addBalanceToCoin.name,
-  //     BalanceServiceController.name,
-  //   );
+  @Post(':coin')
+  @UsePipes(new ValidationPipe())
+  addBalance(
+    @Ip() ip: string,
+    @Headers() headers: ApiHeader,
+    @Param() { coin }: CoinParam,
+    @Body() updateBalanceDto: UpdateBalanceDto,
+  ): Promise<BalanceInfo> {
+    logRequest(
+      this.loggerService,
+      headers['x-user-id'],
+      ip,
+      formatName(BalanceServiceController.name, this.addBalance.name),
+    );
 
-  //   return this.balanceServiceService.addBalance(
-  //     headers['x-user-id'],
-  //     coin,
-  //     updateBalanceDto,
-  //   );
-  // }
+    return this.balanceServiceService.addBalance(
+      headers['x-user-id'],
+      coin,
+      updateBalanceDto,
+    );
+  }
 
-  // @Patch(':coin/substract')
-  // substractBalanceFromCoin(
-  //   @Ip() ip: string,
-  //   @Headers() headers: ApiHeader,
-  //   @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
-  //   @Body(new ZodValidationPipe(updateBalanceSchema))
-  //   updateBalanceDto: UpdateBalanceDto,
-  // ): Promise<number> {
-  //   logRequest(
-  //     headers['x-user-id'],
-  //     ip,
-  //     this.substractBalanceFromCoin.name,
-  //     BalanceServiceController.name,
-  //   );
+  @Delete(':coin')
+  subtractBalance(
+    @Ip() ip: string,
+    @Headers() headers: ApiHeader,
+    @Param() { coin }: CoinParam,
+    @Body() updateBalanceDto: UpdateBalanceDto,
+  ): Promise<BalanceInfo> {
+    logRequest(
+      this.loggerService,
+      headers['x-user-id'],
+      ip,
+      formatName(BalanceServiceController.name, this.subtractBalance.name),
+    );
 
-  //   return this.balanceServiceService.substractBalance(
-  //     headers['x-user-id'],
-  //     coin,
-  //     updateBalanceDto,
-  //   );
-  // }
-
-  // @Patch(':coin/set')
-  // setBalanceToCoin(
-  //   @Ip() ip: string,
-  //   @Headers() headers: ApiHeader,
-  //   @Param('coin', new ZodValidationPipe(CoinSchema)) coin: Coin,
-  //   @Body(new ZodValidationPipe(updateBalanceSchema))
-  //   updateBalanceDto: UpdateBalanceDto,
-  // ): Promise<number> {
-  //   logRequest(
-  //     headers['x-user-id'],
-  //     ip,
-  //     this.setBalanceToCoin.name,
-  //     BalanceServiceController.name,
-  //   );
-
-  //   return this.balanceServiceService.setBalance(
-  //     headers['x-user-id'],
-  //     coin,
-  //     updateBalanceDto,
-  //   );
-  // }
+    return this.balanceServiceService.substractBalance(
+      headers['x-user-id'],
+      coin,
+      updateBalanceDto,
+    );
+  }
 
   @Delete(':coin')
   @UsePipes(new ValidationPipe())

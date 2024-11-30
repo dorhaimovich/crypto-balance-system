@@ -10,6 +10,7 @@ import {
 } from '@app/shared/exceptions/http.exceptions';
 import { BalanceInfo, User } from '@app/shared';
 import { RebalanceDto } from './dto/rebalance.dto';
+import { UpdateBalanceDto } from './dto/update-balance.dto';
 
 @Injectable()
 export class BalanceServiceService {
@@ -156,63 +157,57 @@ export class BalanceServiceService {
     );
   }
 
-  // async addBalance(
-  //   id: string,
-  //   coin: string,
-  //   updateBalanceDto: UpdateBalanceDto,
-  // ): Promise<number> {
-  //   const userIndex = await this.getUserIndex(id);
-  //   const balanceIndex = await this.getBalanceIndex(userIndex, coin);
+  async addBalance(
+    id: string,
+    coin: string,
+    updateBalanceDto: UpdateBalanceDto,
+  ): Promise<BalanceInfo> {
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.getBalanceIndex(userIndex, coin);
 
-  //   const amount = await this.DatabaseService.getData<number>(
-  //     DataBaseFiles.USERS_BALANCES,
-  //     `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
-  //   );
+    const balance = await this.DatabaseService.getData<BalanceInfo>(
+      DataBaseFiles.USERS_BALANCES,
+      `/users[${userIndex}]/balances[${balanceIndex}]`,
+    );
 
-  //   return await this.DatabaseService.setData<number>(
-  //     DataBaseFiles.USERS_BALANCES,
-  //     `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
-  //     amount + updateBalanceDto.amount,
-  //   );
-  // }
+    balance.amount += updateBalanceDto.amount;
 
-  // async substractBalance(
-  //   id: string,
-  //   coin: string,
-  //   updateBalanceDto: UpdateBalanceDto,
-  // ): Promise<number> {
-  //   const userIndex = await this.getUserIndex(id);
-  //   const balanceIndex = await this.getBalanceIndex(userIndex, coin);
+    await this.DatabaseService.setData<number>(
+      DataBaseFiles.USERS_BALANCES,
+      `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
+      balance.amount,
+    );
 
-  //   const amount = await this.DatabaseService.getData<number>(
-  //     DataBaseFiles.USERS_BALANCES,
-  //     `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
-  //   );
+    return balance;
+  }
 
-  //   if (amount < updateBalanceDto.amount) {
-  //     throw new InsufficientBalanceException(coin);
-  //   }
-  //   return await this.DatabaseService.setData<number>(
-  //     DataBaseFiles.USERS_BALANCES,
-  //     `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
-  //     amount - updateBalanceDto.amount,
-  //   );
-  // }
+  async substractBalance(
+    id: string,
+    coin: string,
+    updateBalanceDto: UpdateBalanceDto,
+  ): Promise<BalanceInfo> {
+    const userIndex = await this.getUserIndex(id);
+    const balanceIndex = await this.getBalanceIndex(userIndex, coin);
 
-  // async setBalance(
-  //   id: string,
-  //   coin: string,
-  //   updateBalanceDto: UpdateBalanceDto,
-  // ): Promise<number> {
-  //   const userIndex = await this.getUserIndex(id);
-  //   const balanceIndex = await this.getBalanceIndex(userIndex, coin);
+    const balance = await this.DatabaseService.getData<BalanceInfo>(
+      DataBaseFiles.USERS_BALANCES,
+      `/users[${userIndex}]/balances[${balanceIndex}]`,
+    );
 
-  //   return await this.DatabaseService.setData<number>(
-  //     DataBaseFiles.USERS_BALANCES,
-  //     `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
-  //     updateBalanceDto.amount,
-  //   );
-  // }
+    if (balance.amount < updateBalanceDto.amount) {
+      throw new InsufficientBalanceException(coin);
+    }
+
+    balance.amount -= updateBalanceDto.amount;
+
+    await this.DatabaseService.setData<number>(
+      DataBaseFiles.USERS_BALANCES,
+      `/users[${userIndex}]/balances[${balanceIndex}]/amount`,
+      balance.amount,
+    );
+
+    return balance;
+  }
 
   async deleteBalance(id: string, coin: string): Promise<BalanceInfo> {
     const userIndex = await this.getUserIndex(id);

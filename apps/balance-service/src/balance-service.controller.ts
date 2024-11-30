@@ -114,7 +114,7 @@ export class BalanceServiceController {
   rebalance(
     @Ip() ip: string,
     @Headers() headers: ApiHeader,
-    @Body() coins_precentages: RebalanceDto,
+    @Body() rebalanceDto: RebalanceDto,
   ): Promise<BalanceInfo[]> {
     logRequest(
       this.loggerService,
@@ -125,7 +125,7 @@ export class BalanceServiceController {
 
     return this.balanceServiceService.rebalance(
       headers['x-user-id'],
-      coins_precentages,
+      rebalanceDto,
     );
   }
 

@@ -25,7 +25,7 @@ export class DatabaseService {
 
       return db;
     } catch (error) {
-      this.loggerService.log(
+      this.loggerService.error(
         error,
         formatName(DatabaseService.name, this.getDbInstance.name),
       );

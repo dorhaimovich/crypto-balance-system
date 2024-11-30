@@ -15,15 +15,19 @@ import {
 import { BalanceServiceService } from './balance-service.service';
 import { CreateBalanceDto } from './dto/create-balance.dto';
 
-import { logRequest } from '@app/shared/utils';
+import { formatName, logRequest } from '@app/shared/utils';
 import { ApiHeader, BalanceInfo, RequireUserId } from '@app/shared';
 import { CoinParam } from './params/coin.param';
 import { RebalanceDto } from './dto/rebalance.dto';
+import { LoggerService } from '@app/shared/logger/logger.service';
 
 @Controller('balances')
 @RequireUserId()
 export class BalanceServiceController {
-  constructor(private readonly balanceServiceService: BalanceServiceService) {}
+  constructor(
+    private readonly balanceServiceService: BalanceServiceService,
+    private readonly loggerService: LoggerService,
+  ) {}
 
   @Get()
   getAllBalances(
@@ -31,10 +35,10 @@ export class BalanceServiceController {
     @Headers() headers: ApiHeader,
   ): Promise<BalanceInfo[]> {
     logRequest(
+      this.loggerService,
       headers['x-user-id'],
       ip,
-      this.getAllBalances.name,
-      BalanceServiceController.name,
+      formatName(BalanceServiceController.name, this.getAllBalances.name),
     );
 
     return this.balanceServiceService.getAllBalances(headers['x-user-id']);
@@ -48,10 +52,10 @@ export class BalanceServiceController {
     @Param() { coin }: CoinParam,
   ): Promise<BalanceInfo> {
     logRequest(
+      this.loggerService,
       headers['x-user-id'],
       ip,
-      this.getOneBalance.name,
-      BalanceServiceController.name,
+      formatName(BalanceServiceController.name, this.getOneBalance.name),
     );
     console.log(coin);
     return this.balanceServiceService.getOneBalance(headers['x-user-id'], coin);
@@ -69,10 +73,10 @@ export class BalanceServiceController {
     @Body() createBalanceDto: CreateBalanceDto,
   ): Promise<CreateBalanceDto> {
     logRequest(
+      this.loggerService,
       headers['x-user-id'],
       ip,
-      this.createBalance.name,
-      BalanceServiceController.name,
+      formatName(BalanceServiceController.name, this.createBalance.name),
     );
     return this.balanceServiceService.createBalance(
       headers['x-user-id'],
@@ -112,10 +116,10 @@ export class BalanceServiceController {
     @Body() coins_precentages: RebalanceDto,
   ): Promise<BalanceInfo[]> {
     logRequest(
+      this.loggerService,
       headers['x-user-id'],
       ip,
-      this.rebalance.name,
-      BalanceServiceController.name,
+      formatName(BalanceServiceController.name, this.rebalance.name),
     );
 
     return this.balanceServiceService.rebalance(
@@ -198,10 +202,10 @@ export class BalanceServiceController {
     @Param() { coin }: CoinParam,
   ): Promise<BalanceInfo> {
     logRequest(
+      this.loggerService,
       headers['x-user-id'],
       ip,
-      this.deleteBalance.name,
-      BalanceServiceController.name,
+      formatName(BalanceServiceController.name, this.deleteBalance.name),
     );
 
     return this.balanceServiceService.deleteBalance(headers['x-user-id'], coin);

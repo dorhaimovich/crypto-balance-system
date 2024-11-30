@@ -16,14 +16,13 @@ import { BalanceServiceService } from './balance-service.service';
 import { CreateBalanceDto } from './dto/create-balance.dto';
 
 import { formatName, logRequest } from '@app/shared/utils';
-import { ApiHeader, BalanceInfo, RequireUserId } from '@app/shared';
+import { BalanceInfo, UserId } from '@app/shared';
 import { CoinParam } from './params/coin.param';
 import { RebalanceDto } from './dto/rebalance.dto';
 import { LoggerService } from '@app/shared/logger/logger.service';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
 
 @Controller('balances')
-@RequireUserId()
 export class BalanceServiceController {
   constructor(
     private readonly balanceServiceService: BalanceServiceService,
@@ -33,33 +32,33 @@ export class BalanceServiceController {
   @Get()
   getAllBalances(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
+    @UserId() userId: string,
   ): Promise<BalanceInfo[]> {
     logRequest(
       this.loggerService,
-      headers['x-user-id'],
+      userId,
       ip,
       formatName(BalanceServiceController.name, this.getAllBalances.name),
     );
 
-    return this.balanceServiceService.getAllBalances(headers['x-user-id']);
+    return this.balanceServiceService.getAllBalances(userId);
   }
 
   @Get(':coin')
   @UsePipes(new ValidationPipe())
   getOneBalance(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
+    @UserId() userId: string,
     @Param() { coin }: CoinParam,
   ): Promise<BalanceInfo> {
     logRequest(
       this.loggerService,
-      headers['x-user-id'],
+      userId,
       ip,
       formatName(BalanceServiceController.name, this.getOneBalance.name),
     );
     console.log(coin);
-    return this.balanceServiceService.getOneBalance(headers['x-user-id'], coin);
+    return this.balanceServiceService.getOneBalance(userId, coin);
   }
 
   @Post()
@@ -70,19 +69,16 @@ export class BalanceServiceController {
   )
   createBalance(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
+    @UserId() userId: string,
     @Body() createBalanceDto: CreateBalanceDto,
   ): Promise<CreateBalanceDto> {
     logRequest(
       this.loggerService,
-      headers['x-user-id'],
+      userId,
       ip,
       formatName(BalanceServiceController.name, this.createBalance.name),
     );
-    return this.balanceServiceService.createBalance(
-      headers['x-user-id'],
-      createBalanceDto,
-    );
+    return this.balanceServiceService.createBalance(userId, createBalanceDto);
   }
 
   // @Get('currency/:currency')
@@ -93,14 +89,14 @@ export class BalanceServiceController {
   //   currency: string,
   // ): Promise<Record<string, number>> {
   //   logRequest(
-  //     headers['x-user-id'],
+  //     userId,
   //     ip,
   //     this.getTotalBalances.name,
   //     BalanceServiceController.name,
   //   );
 
   //   return this.balanceServiceService.getTotalBalances(
-  //     headers['x-user-id'],
+  //     userId,
   //     currency,
   //   );
   // }
@@ -113,39 +109,36 @@ export class BalanceServiceController {
   )
   rebalance(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
+    @UserId() userId: string,
     @Body() rebalanceDto: RebalanceDto,
   ): Promise<BalanceInfo[]> {
     logRequest(
       this.loggerService,
-      headers['x-user-id'],
+      userId,
       ip,
       formatName(BalanceServiceController.name, this.rebalance.name),
     );
 
-    return this.balanceServiceService.rebalance(
-      headers['x-user-id'],
-      rebalanceDto,
-    );
+    return this.balanceServiceService.rebalance(userId, rebalanceDto);
   }
 
   @Post(':coin')
   @UsePipes(new ValidationPipe())
   addBalance(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
+    @UserId() userId: string,
     @Param() { coin }: CoinParam,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ): Promise<BalanceInfo> {
     logRequest(
       this.loggerService,
-      headers['x-user-id'],
+      userId,
       ip,
       formatName(BalanceServiceController.name, this.addBalance.name),
     );
 
     return this.balanceServiceService.addBalance(
-      headers['x-user-id'],
+      userId,
       coin,
       updateBalanceDto,
     );
@@ -154,19 +147,19 @@ export class BalanceServiceController {
   @Delete(':coin')
   subtractBalance(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
+    @UserId() userId: string,
     @Param() { coin }: CoinParam,
     @Body() updateBalanceDto: UpdateBalanceDto,
   ): Promise<BalanceInfo> {
     logRequest(
       this.loggerService,
-      headers['x-user-id'],
+      userId,
       ip,
       formatName(BalanceServiceController.name, this.subtractBalance.name),
     );
 
     return this.balanceServiceService.substractBalance(
-      headers['x-user-id'],
+      userId,
       coin,
       updateBalanceDto,
     );
@@ -176,16 +169,16 @@ export class BalanceServiceController {
   @UsePipes(new ValidationPipe())
   deleteBalance(
     @Ip() ip: string,
-    @Headers() headers: ApiHeader,
+    @UserId() userId: string,
     @Param() { coin }: CoinParam,
   ): Promise<BalanceInfo> {
     logRequest(
       this.loggerService,
-      headers['x-user-id'],
+      userId,
       ip,
       formatName(BalanceServiceController.name, this.deleteBalance.name),
     );
 
-    return this.balanceServiceService.deleteBalance(headers['x-user-id'], coin);
+    return this.balanceServiceService.deleteBalance(userId, coin);
   }
 }

@@ -141,8 +141,6 @@ export class BalancesRepository {
     const userIndex = await this.getUserIndex(id);
     const balanceIndex = await this.getBalanceIndex(userIndex, coin);
 
-    console.log(balanceIndex);
-
     return await this.DatabaseService.removeData<BalanceInfo>(
       DataBaseFiles.USERS_BALANCES,
       `/users[${userIndex}]/balances[${balanceIndex}]`,

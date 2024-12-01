@@ -11,7 +11,6 @@ export class UniqueCoinsValidator implements ValidatorConstraintInterface {
     const object = args.object as RebalanceDto;
     const coins = object.coins.map((item) => item.coin);
 
-    // Check if there are any duplicate coins
     const uniqueCoins = new Set(coins);
     return coins.length === uniqueCoins.size;
   }

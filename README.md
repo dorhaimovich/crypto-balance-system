@@ -52,6 +52,36 @@ $ npm run start:dev
 This service is designed to manage user cryptocurrency balances efficiently. It follows a modular approach using **NestJS**, emphasizing clean code structure and extensibility. Key features include:
 
 - **Daily Currency and Rates Synchronization**: Supported currencies and coin rates are fetched daily from an external API, ensuring up-to-date information and flexibility in handling various cryptocurrencies.
-- **Validation with Zod**: Data validation is implemented using `Zod` schemas, ensuring API inputs are accurate and consistent.  
+- **Validation with Class-validator**: Data validation is implemented using class-validator decorators, ensuring API inputs are accurate and consistent.
 - **Error Handling**: Custom exceptions and a global exception filter provide clear error messages and centralized error management.  
-- **Logging**: Detailed logs for each API call and critical operations facilitate monitoring and debugging.  
+- **Logging**: Detailed logs for each API call and critical operations facilitate monitoring and debugging.
+
+## Expected API Outputs
+
+Below are the expected outputs for the key API endpoints:
+
+### Get User Balance
+
+Endpoint: GET /balances/:userId
+
+Description: Fetch the balance of a specific user.
+
+Example Request:
+
+```bash
+GET /balances/12345
+Expected Response:
+json
+Copy code
+{
+  "status": "success",
+  "data": {
+    "userId": "12345",
+    "balances": {
+      "bitcoin": 0.5,
+      "ethereum": 2.0,
+      "tether": 5000
+    }
+  }
+}
+```

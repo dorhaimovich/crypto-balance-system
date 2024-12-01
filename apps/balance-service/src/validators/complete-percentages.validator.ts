@@ -11,7 +11,7 @@ export class CompletePercentagesValidator
 {
   validate(value: any, args: ValidationArguments) {
     const object = args.object as RebalanceDto;
-    const sum = object.coins.reduce((acc, item) => acc + item.precentage, 0);
+    const sum = object.coins.reduce((acc, item) => acc + item.percentage, 0);
     return sum === 100;
   }
 

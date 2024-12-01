@@ -15,8 +15,6 @@ describe('BalanceServiceController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      // expect(balanceServiceController.getHello()).toBe('Hello World!');
-    });
+    it('should return "Hello World!"', () => {});
   });
 });

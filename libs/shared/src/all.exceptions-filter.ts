@@ -26,7 +26,6 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
       response: 'Internal Server Error',
     };
 
-    // Add an db exception of my own
     if (exception instanceof HttpException) {
       responseObject.statusCode = exception.getStatus();
       responseObject.response = exception.getResponse();

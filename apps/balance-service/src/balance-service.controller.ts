@@ -62,7 +62,6 @@ export class BalanceController {
       ip,
       formatName(BalanceController.name, this.getOneBalance.name),
     );
-    console.log(coin);
     return this.balanceService.getOneBalance(userId, coin);
   }
 

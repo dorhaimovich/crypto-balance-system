@@ -64,13 +64,14 @@ Below are the expected outputs for the key API endpoints:
 
 Endpoint: GET /balances
 
-Description: Fetch the balances of a specific user.
+Description: Fetch all balances of a specific user.
 
 Example Request:
 
 ```bash
 GET /balances
 ```
+
 Expected Response:
 
 ```bash
@@ -91,4 +92,80 @@ Expected Response:
         "amount": 26.000021931794528
     }
 ]
+```
+
+### Get One Balance
+
+Endpoint: GET /balances/:coin
+
+Description: Fetch the balance of a specific coin.
+
+Example Request:
+
+```bash
+GET /balances/tether
+```
+
+Expected Response:
+
+```bash
+{
+    "coin": "tether",
+    "symbol": "usdt",
+    "amount": 119
+}
+```
+
+### Create Balance
+
+Endpoint: POST /balances
+
+Description: create a new balance for a specific user.
+
+Example Request:
+
+```bash
+POST /balances
+```
+
+Expected Request Body:
+
+```bash
+{
+    "coin": "polkadot",
+    "symbol": "dot",
+    "amount": 100
+}
+```
+
+Expected Response:
+
+```bash
+{
+    "coin": "polkadot",
+    "symbol": "dot",
+    "amount": 100
+}
+```
+
+### Delete Balance
+
+Endpoint: DELETE /balances/:coin
+
+Description: remove a balance of a specific coin.
+
+Example Request:
+
+```bash
+DELETE /balances/solana
+```
+
+Expected Response:
+
+```bash
+{
+    "coin": "solana",
+    "symbol": "sol",
+    "amount": 134
+}
 ```

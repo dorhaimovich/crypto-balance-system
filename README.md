@@ -60,28 +60,35 @@ This service is designed to manage user cryptocurrency balances efficiently. It 
 
 Below are the expected outputs for the key API endpoints:
 
-### Get User Balance
+### Get All Balances
 
-Endpoint: GET /balances/:userId
+Endpoint: GET /balances
 
-Description: Fetch the balance of a specific user.
+Description: Fetch the balances of a specific user.
 
 Example Request:
 
 ```bash
-GET /balances/12345
+GET /balances
+```
 Expected Response:
-json
-Copy code
-{
-  "status": "success",
-  "data": {
-    "userId": "12345",
-    "balances": {
-      "bitcoin": 0.5,
-      "ethereum": 2.0,
-      "tether": 5000
+
+```bash
+[
+    {
+        "coin": "tether",
+        "symbol": "usdt",
+        "amount": 559
+    },
+    {
+        "coin": "ethereum",
+        "symbol": "eth",
+        "amount": 1530.982700519926
+    },
+    {
+        "coin": "bitcoin",
+        "symbol": "btc",
+        "amount": 26.000021931794528
     }
-  }
-}
+]
 ```

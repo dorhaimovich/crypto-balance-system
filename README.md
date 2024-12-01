@@ -169,3 +169,119 @@ Expected Response:
     "amount": 134
 }
 ```
+
+### Change Balance
+
+Endpoint: PATCH /balances/:coin
+
+Description: change the balance for a specific user.
+
+Example Request:
+
+```bash
+PATCH /balances/tether
+```
+
+Expected Request Body:
+
+```bash
+{
+    "amount": 10,
+}
+```
+
+Expected Response:
+
+```bash
+{
+    "coin": "tether",
+    "symbol": "usdt",
+    "amount": 559
+}
+```
+
+### rebalance
+
+Endpoint: PUT /balances/rebalance
+
+Description: Rebalance the coins of a specific user.
+
+Example Request:
+
+```bash
+PUT /balances/rebalance
+```
+
+Expected Request Body:
+
+```bash
+{
+    "coins": [
+        {
+            "coin": "tether",
+            "percentage": 20
+        },
+        {
+            "coin": "ethereum",
+            "percentage": 40
+        },
+        {
+            "coin": "bitcoin",
+            "percentage": 40
+        }
+    ]
+}
+```
+
+Expected Response:
+
+```bash
+[
+    {
+        "coin": "tether",
+        "symbol": "usdt",
+        "amount": 1823836.163836164
+    },
+    {
+        "coin": "ethereum",
+        "symbol": "eth",
+        "amount": 1177.6780069925558
+    },
+    {
+        "coin": "bitcoin",
+        "symbol": "btc",
+        "amount": 40
+    },
+    {
+        "coin": "ripple",
+        "symbol": "xrp",
+        "amount": 0
+    },
+    {
+        "coin": "cardano",
+        "symbol": "ada",
+        "amount": 0
+    }
+]
+```
+
+### Get Total Balance
+
+Endpoint: GET /balances/currency/:currency
+
+Description: Fetch the total balance of a specific user in the expected currency.
+
+Example Request:
+
+```bash
+GET /balances/currency/usd
+```
+
+Expected Response:
+
+```bash
+{
+    "usd": 7800.243
+}
+```
+

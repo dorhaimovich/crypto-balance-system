@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common';
+
 import { CreateBalanceDto } from './dto/create-balance.dto';
-import { BalanceInfo, Currency } from '@app/shared';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
-import { BalancesRepository } from '@app/shared/database/repositories/balances.repository';
-import { InsufficientBalanceException } from '@app/shared/exceptions/http.exceptions';
-import { RatesRepository } from '@app/shared/database/repositories/rates.repository';
 import { RebalanceDto } from './dto/rebalance.dto';
+
+import {
+  BalanceInfo,
+  Currency,
+  InsufficientBalanceException,
+  RatesRepository,
+  BalancesRepository,
+} from '@app/shared';
 
 @Injectable()
 export class BalanceService {

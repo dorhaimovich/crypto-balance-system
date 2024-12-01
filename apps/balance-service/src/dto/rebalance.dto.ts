@@ -1,4 +1,3 @@
-import { Constants as c } from '@app/shared/constants';
 import { Type } from 'class-transformer';
 import {
   IsEnum,
@@ -10,6 +9,7 @@ import {
 } from 'class-validator';
 import { CompletePercentagesValidator } from '../validators/complete-percentages.validator';
 import { UniqueCoinsValidator } from '../validators/unique-coins.validator';
+import { Constants as c } from '@app/shared';
 
 export class RebalanceDto {
   @ValidateNested()

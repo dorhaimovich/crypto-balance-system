@@ -14,14 +14,18 @@ import {
 
 import { BalanceService } from './balance-service.service';
 import { CreateBalanceDto } from './dto/create-balance.dto';
-
-import { formatName, logRequest } from '@app/shared/utils';
-import { BalanceInfo, UserId } from '@app/shared';
-import { CoinParam } from './params/coin.param';
-import { LoggerService } from '@app/shared/logger/logger.service';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
-import { CurrencyParam } from './params/currency.param';
 import { RebalanceDto } from './dto/rebalance.dto';
+import { CoinParam } from './params/coin.param';
+import { CurrencyParam } from './params/currency.param';
+
+import {
+  formatName,
+  logRequest,
+  BalanceInfo,
+  UserId,
+  LoggerService,
+} from '@app/shared';
 
 @Controller('balances')
 export class BalanceController {

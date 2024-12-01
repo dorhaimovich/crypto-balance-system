@@ -1,14 +1,17 @@
-import { BalanceInfo, User } from '@app/shared';
-import { DataBaseFiles } from '@app/shared/db-files';
 import { Injectable } from '@nestjs/common';
+
 import { DatabaseService } from '../database.service';
+import { Balance } from '../entities/balance.entity';
+import { Amount } from '../entities/amount.entity';
+
 import {
+  BalanceInfo,
+  User,
+  DataBaseFiles,
   CoinAlreadyExistException,
   CoinNotFoundException,
   UserNotFoundException,
-} from '@app/shared/exceptions/http.exceptions';
-import { Balance } from '../entities/balance.entity';
-import { Amount } from '../entities/amount.entity';
+} from '@app/shared';
 
 @Injectable()
 export class BalancesRepository {

@@ -1,10 +1,10 @@
-import { Constants as c } from '@app/shared/constants';
-
 import {
   ValidationArguments,
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+
+import { Constants as c } from '@app/shared';
 
 @ValidatorConstraint({ name: 'coinSymbolMatch', async: false })
 export class CoinSymbolMatchValidator implements ValidatorConstraintInterface {

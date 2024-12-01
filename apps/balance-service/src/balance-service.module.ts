@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+
 import { BalanceController } from './balance-service.controller';
 import { BalanceService } from './balance-service.service';
-import { SharedModule } from '@app/shared';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { Throttlers } from '@app/shared/throttlers';
-import { APP_GUARD } from '@nestjs/core';
+
+import { SharedModule, Throttlers } from '@app/shared';
 
 @Module({
   imports: [

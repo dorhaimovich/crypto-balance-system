@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { RateServiceService } from './rate-service.service';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
-import { SharedModule } from '@app/shared';
 import { ScheduleModule } from '@nestjs/schedule';
+
+import { RateServiceService } from './rate-service.service';
+
+import { SharedModule } from '@app/shared';
 
 @Module({
   imports: [

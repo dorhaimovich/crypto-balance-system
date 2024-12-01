@@ -1,9 +1,11 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { DatabaseService } from '../database.service';
-import { DataBaseFiles } from '@app/shared/db-files';
-import { Coin, Currency } from '@app/shared/types';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+
 import { Cache } from 'cache-manager';
+
+import { DatabaseService } from '../database.service';
+
+import { DataBaseFiles, Coin, Currency } from '@app/shared';
 
 @Injectable()
 export class RatesRepository {

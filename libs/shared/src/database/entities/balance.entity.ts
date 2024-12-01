@@ -1,4 +1,4 @@
-import { Coin } from '@app/shared/types';
+import { Coin } from '@app/shared';
 
 export class Balance {
   coin: Coin;

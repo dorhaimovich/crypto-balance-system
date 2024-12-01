@@ -7,12 +7,15 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { firstValueFrom } from 'rxjs';
 import { Cache } from 'cache-manager';
 
-import { DatabaseService } from '@app/shared/database/database.service';
-import { LoggerService } from '@app/shared/logger/logger.service';
-import { DataBaseFiles } from '@app/shared/db-files';
-import { Coin, CoinInfo } from '@app/shared';
-import { Currency } from '@app/shared/types/currency.type';
-import { formatName } from '@app/shared/utils';
+import {
+  Coin,
+  CoinInfo,
+  DataBaseFiles,
+  formatName,
+  Currency,
+  DatabaseService,
+  LoggerService,
+} from '@app/shared';
 
 @Injectable()
 export class RateServiceService {

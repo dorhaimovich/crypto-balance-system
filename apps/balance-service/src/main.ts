@@ -1,5 +1,7 @@
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+
 import { BalanceServiceModule } from './balance-service.module';
+
 import { AllExceptionsFilter } from '@app/shared';
 
 async function bootstrap() {

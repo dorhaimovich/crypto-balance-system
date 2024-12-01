@@ -28,40 +28,6 @@ export class RateServiceService {
     this.baseURl = this.configService.get<string>('COINGECKO_API_URL');
   }
 
-  async getRates(
-    currency: string,
-    coinIds: Coin[],
-  ): Promise<Partial<Record<Coin, number>>> {
-    const rates: Partial<Record<Coin, number>> = {};
-
-    for (const coinId of coinIds) {
-      try {
-        const value = await this.cacheManager.get<number>(
-          `${coinId}-${currency}`,
-        );
-
-        if (value) {
-          rates[coinId] = value;
-        } else {
-          const currencyRate = await this.databaseService.getData<number>(
-            DataBaseFiles.RATES,
-            `/${coinId}/${currency.toLowerCase()}`,
-          );
-
-          rates[coinId] = currencyRate;
-          await this.cacheManager.set(`${coinId}-${currency}`, currencyRate);
-        }
-      } catch (error) {
-        this.loggerService.error(
-          error,
-          formatName(RateServiceService.name, this.getRates.name),
-        );
-      }
-    }
-
-    return rates;
-  }
-
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   private async updateSupportedCurrencies(): Promise<void> {
     const endpoint = `${this.baseURl}simple/supported_vs_currencies`;

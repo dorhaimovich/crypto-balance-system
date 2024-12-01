@@ -5,27 +5,28 @@ import {
   Param,
   Patch,
   Post,
-  Headers,
   UsePipes,
   Delete,
   Ip,
   ValidationPipe,
+  Put,
 } from '@nestjs/common';
 
-import { BalanceServiceService } from './balance-service.service';
+import { BalanceService } from './balance-service.service';
 import { CreateBalanceDto } from './dto/create-balance.dto';
 
 import { formatName, logRequest } from '@app/shared/utils';
 import { BalanceInfo, UserId } from '@app/shared';
 import { CoinParam } from './params/coin.param';
-import { RebalanceDto } from './dto/rebalance.dto';
 import { LoggerService } from '@app/shared/logger/logger.service';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
+import { CurrencyParam } from './params/currency.param';
+import { RebalanceDto } from './dto/rebalance.dto';
 
 @Controller('balances')
-export class BalanceServiceController {
+export class BalanceController {
   constructor(
-    private readonly balanceServiceService: BalanceServiceService,
+    private readonly balanceService: BalanceService,
     private readonly loggerService: LoggerService,
   ) {}
 
@@ -38,10 +39,10 @@ export class BalanceServiceController {
       this.loggerService,
       userId,
       ip,
-      formatName(BalanceServiceController.name, this.getAllBalances.name),
+      formatName(BalanceController.name, this.getAllBalances.name),
     );
 
-    return this.balanceServiceService.getAllBalances(userId);
+    return this.balanceService.getAllBalances(userId);
   }
 
   @Get(':coin')
@@ -55,10 +56,10 @@ export class BalanceServiceController {
       this.loggerService,
       userId,
       ip,
-      formatName(BalanceServiceController.name, this.getOneBalance.name),
+      formatName(BalanceController.name, this.getOneBalance.name),
     );
     console.log(coin);
-    return this.balanceServiceService.getOneBalance(userId, coin);
+    return this.balanceService.getOneBalance(userId, coin);
   }
 
   @Post()
@@ -76,32 +77,64 @@ export class BalanceServiceController {
       this.loggerService,
       userId,
       ip,
-      formatName(BalanceServiceController.name, this.createBalance.name),
+      formatName(BalanceController.name, this.createBalance.name),
     );
-    return this.balanceServiceService.createBalance(userId, createBalanceDto);
+    return this.balanceService.createBalance(userId, createBalanceDto);
   }
 
-  // @Get('currency/:currency')
-  // getTotalBalances(
-  //   @Ip() ip: string,
-  //   @Headers() headers: BalacesApiHeader,
-  //   @Param('currency', new ZodValidationPipe(generateCurrencyEnum()))
-  //   currency: string,
-  // ): Promise<Record<string, number>> {
-  //   logRequest(
-  //     userId,
-  //     ip,
-  //     this.getTotalBalances.name,
-  //     BalanceServiceController.name,
-  //   );
+  @Patch(':coin')
+  @UsePipes(new ValidationPipe())
+  chagneBalance(
+    @Ip() ip: string,
+    @UserId() userId: string,
+    @Param() { coin }: CoinParam,
+    @Body() updateBalanceDto: UpdateBalanceDto,
+  ): Promise<BalanceInfo> {
+    logRequest(
+      this.loggerService,
+      userId,
+      ip,
+      formatName(BalanceController.name, this.chagneBalance.name),
+    );
 
-  //   return this.balanceServiceService.getTotalBalances(
-  //     userId,
-  //     currency,
-  //   );
-  // }
+    return this.balanceService.changeBalance(userId, coin, updateBalanceDto);
+  }
 
-  @Patch('/rebalance')
+  @Delete(':coin')
+  @UsePipes(new ValidationPipe())
+  deleteBalance(
+    @Ip() ip: string,
+    @UserId() userId: string,
+    @Param() { coin }: CoinParam,
+  ): Promise<BalanceInfo> {
+    logRequest(
+      this.loggerService,
+      userId,
+      ip,
+      formatName(BalanceController.name, this.deleteBalance.name),
+    );
+
+    return this.balanceService.deleteBalance(userId, coin);
+  }
+
+  @Get('currency/:currency')
+  @UsePipes(new ValidationPipe())
+  getTotalBalances(
+    @Ip() ip: string,
+    @UserId() userId: string,
+    @Param() { currency }: CurrencyParam,
+  ): Promise<Record<string, number>> {
+    logRequest(
+      this.loggerService,
+      userId,
+      ip,
+      formatName(BalanceController.name, this.getTotalBalances.name),
+    );
+
+    return this.balanceService.getTotalBalances(userId, currency);
+  }
+
+  @Put('/rebalance')
   @UsePipes(
     new ValidationPipe({
       whitelist: true,
@@ -116,69 +149,8 @@ export class BalanceServiceController {
       this.loggerService,
       userId,
       ip,
-      formatName(BalanceServiceController.name, this.rebalance.name),
+      formatName(BalanceController.name, this.rebalance.name),
     );
-
-    return this.balanceServiceService.rebalance(userId, rebalanceDto);
-  }
-
-  @Post(':coin')
-  @UsePipes(new ValidationPipe())
-  addBalance(
-    @Ip() ip: string,
-    @UserId() userId: string,
-    @Param() { coin }: CoinParam,
-    @Body() updateBalanceDto: UpdateBalanceDto,
-  ): Promise<BalanceInfo> {
-    logRequest(
-      this.loggerService,
-      userId,
-      ip,
-      formatName(BalanceServiceController.name, this.addBalance.name),
-    );
-
-    return this.balanceServiceService.addBalance(
-      userId,
-      coin,
-      updateBalanceDto,
-    );
-  }
-
-  @Delete(':coin')
-  subtractBalance(
-    @Ip() ip: string,
-    @UserId() userId: string,
-    @Param() { coin }: CoinParam,
-    @Body() updateBalanceDto: UpdateBalanceDto,
-  ): Promise<BalanceInfo> {
-    logRequest(
-      this.loggerService,
-      userId,
-      ip,
-      formatName(BalanceServiceController.name, this.subtractBalance.name),
-    );
-
-    return this.balanceServiceService.substractBalance(
-      userId,
-      coin,
-      updateBalanceDto,
-    );
-  }
-
-  @Delete(':coin')
-  @UsePipes(new ValidationPipe())
-  deleteBalance(
-    @Ip() ip: string,
-    @UserId() userId: string,
-    @Param() { coin }: CoinParam,
-  ): Promise<BalanceInfo> {
-    logRequest(
-      this.loggerService,
-      userId,
-      ip,
-      formatName(BalanceServiceController.name, this.deleteBalance.name),
-    );
-
-    return this.balanceServiceService.deleteBalance(userId, coin);
+    return this.balanceService.rebalance(userId, rebalanceDto);
   }
 }

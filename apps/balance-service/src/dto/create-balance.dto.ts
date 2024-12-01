@@ -7,13 +7,11 @@ export class CreateBalanceDto {
   @IsEnum(c.COINS_LIST)
   coin: Coin;
 
+  @Validate(CoinSymbolMatchValidator)
   @IsString()
   symbol: string;
 
   @IsNumber()
   @Min(0)
   amount: number;
-
-  @Validate(CoinSymbolMatchValidator)
-  symbolMatchesCoin: boolean;
 }

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { BalanceServiceController } from './balance-service.controller';
-import { BalanceServiceService } from './balance-service.service';
+import { BalanceController } from './balance-service.controller';
+import { BalanceService } from './balance-service.service';
 import { SharedModule } from '@app/shared';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { Throttlers } from '@app/shared/throttlers';
@@ -11,9 +11,9 @@ import { APP_GUARD } from '@nestjs/core';
     SharedModule,
     ThrottlerModule.forRoot(Throttlers.getAllThrottlers()),
   ],
-  controllers: [BalanceServiceController],
+  controllers: [BalanceController],
   providers: [
-    BalanceServiceService,
+    BalanceService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

@@ -9,11 +9,13 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { CompletePercentagesValidator } from '../validators/complete-percentages.validator';
+import { UniqueCoinsValidator } from '../validators/unique-coins.validator';
 
 export class RebalanceDto {
   @ValidateNested()
   @Type(() => RebalanceItemDto)
   @Validate(CompletePercentagesValidator)
+  @Validate(UniqueCoinsValidator)
   coins: RebalanceItemDto[];
 }
 
@@ -24,5 +26,5 @@ class RebalanceItemDto {
   @IsNumber()
   @Min(0)
   @Max(100)
-  precentage: number;
+  percentage: number;
 }

@@ -4,10 +4,11 @@
       "id": "12345",
       "name": "jonny",
       "balances": [
-        { "coin": "tether", "symbol": "usdt", "amount": 13 },
-        { "coin": "ethereum", "symbol": "eth", "amount": 1530.982700519926 },
-        { "coin": "bitcoin", "symbol": "btc", "amount": 26.000021931794528 },
-        { "coin": "ripple", "symbol": "xrp", "amount": 100 }
+        { "coin": "tether", "symbol": "usdt", "amount": 1823836.163836164 },
+        { "coin": "ethereum", "symbol": "eth", "amount": 1177.6780069925558 },
+        { "coin": "bitcoin", "symbol": "btc", "amount": 40 },
+        { "coin": "ripple", "symbol": "xrp", "amount": 0 },
+        { "coin": "cardano", "symbol": "ada", "amount": 0 }
       ]
     },
     {

@@ -35,9 +35,8 @@ $ npm install
 ```
 
 3. Add .env file to root folder
-4. 
-
-### Compile and run the project
+   
+4. Compile and run the project
 
 ```bash
 # development
@@ -53,6 +52,236 @@ $ npm run start:dev
 This service is designed to manage user cryptocurrency balances efficiently. It follows a modular approach using **NestJS**, emphasizing clean code structure and extensibility. Key features include:
 
 - **Daily Currency and Rates Synchronization**: Supported currencies and coin rates are fetched daily from an external API, ensuring up-to-date information and flexibility in handling various cryptocurrencies.
-- **Validation with Zod**: Data validation is implemented using `Zod` schemas, ensuring API inputs are accurate and consistent.  
+- **Validation with Class-validator**: Data validation is implemented using class-validator decorators, ensuring API inputs are accurate and consistent.
 - **Error Handling**: Custom exceptions and a global exception filter provide clear error messages and centralized error management.  
-- **Logging**: Detailed logs for each API call and critical operations facilitate monitoring and debugging.  
+- **Logging**: Detailed logs for each API call and critical operations facilitate monitoring and debugging.
+
+## Expected API Outputs
+
+Below are the expected outputs for the key API endpoints:
+
+### Get All Balances
+
+Endpoint: GET /balances
+
+Description: Fetch all balances of a specific user.
+
+Example Request:
+
+```bash
+GET /balances
+```
+
+Expected Response:
+
+```bash
+[
+    {
+        "coin": "tether",
+        "symbol": "usdt",
+        "amount": 559
+    },
+    {
+        "coin": "ethereum",
+        "symbol": "eth",
+        "amount": 1530.982700519926
+    },
+    {
+        "coin": "bitcoin",
+        "symbol": "btc",
+        "amount": 26.000021931794528
+    }
+]
+```
+
+### Get One Balance
+
+Endpoint: GET /balances/:coin
+
+Description: Fetch the balance of a specific coin.
+
+Example Request:
+
+```bash
+GET /balances/tether
+```
+
+Expected Response:
+
+```bash
+{
+    "coin": "tether",
+    "symbol": "usdt",
+    "amount": 119
+}
+```
+
+### Create Balance
+
+Endpoint: POST /balances
+
+Description: create a new balance for a specific user.
+
+Example Request:
+
+```bash
+POST /balances
+```
+
+Expected Request Body:
+
+```bash
+{
+    "coin": "polkadot",
+    "symbol": "dot",
+    "amount": 100
+}
+```
+
+Expected Response:
+
+```bash
+{
+    "coin": "polkadot",
+    "symbol": "dot",
+    "amount": 100
+}
+```
+
+### Delete Balance
+
+Endpoint: DELETE /balances/:coin
+
+Description: remove a balance of a specific coin.
+
+Example Request:
+
+```bash
+DELETE /balances/solana
+```
+
+Expected Response:
+
+```bash
+{
+    "coin": "solana",
+    "symbol": "sol",
+    "amount": 134
+}
+```
+
+### Change Balance
+
+Endpoint: PATCH /balances/:coin
+
+Description: change the balance for a specific user.
+
+Example Request:
+
+```bash
+PATCH /balances/tether
+```
+
+Expected Request Body:
+
+```bash
+{
+    "amount": 10,
+}
+```
+
+Expected Response:
+
+```bash
+{
+    "coin": "tether",
+    "symbol": "usdt",
+    "amount": 559
+}
+```
+
+### rebalance
+
+Endpoint: PUT /balances/rebalance
+
+Description: Rebalance the coins of a specific user.
+
+Example Request:
+
+```bash
+PUT /balances/rebalance
+```
+
+Expected Request Body:
+
+```bash
+{
+    "coins": [
+        {
+            "coin": "tether",
+            "percentage": 20
+        },
+        {
+            "coin": "ethereum",
+            "percentage": 40
+        },
+        {
+            "coin": "bitcoin",
+            "percentage": 40
+        }
+    ]
+}
+```
+
+Expected Response:
+
+```bash
+[
+    {
+        "coin": "tether",
+        "symbol": "usdt",
+        "amount": 1823836.163836164
+    },
+    {
+        "coin": "ethereum",
+        "symbol": "eth",
+        "amount": 1177.6780069925558
+    },
+    {
+        "coin": "bitcoin",
+        "symbol": "btc",
+        "amount": 40
+    },
+    {
+        "coin": "ripple",
+        "symbol": "xrp",
+        "amount": 0
+    },
+    {
+        "coin": "cardano",
+        "symbol": "ada",
+        "amount": 0
+    }
+]
+```
+
+### Get Total Balance
+
+Endpoint: GET /balances/currency/:currency
+
+Description: Fetch the total balance of a specific user in the expected currency.
+
+Example Request:
+
+```bash
+GET /balances/currency/usd
+```
+
+Expected Response:
+
+```bash
+{
+    "usd": 7800.243
+}
+```
+
